@@ -1,0 +1,5 @@
+WebSharper.Charting.Tests/*
+*.suo
+packages/*
+WebSharper.Charting/bin/*
+WebSharper.Charting/obj/*
