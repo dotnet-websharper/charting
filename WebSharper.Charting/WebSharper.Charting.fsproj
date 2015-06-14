@@ -48,6 +48,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="Canvas.fs" />
+    <Compile Include="Color.fs" />
     <Compile Include="Chart.fs" />
     <Compile Include="LineChart.fs" />
     <Compile Include="Charting.fs" />

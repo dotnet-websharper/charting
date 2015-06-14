@@ -20,7 +20,13 @@ type LineChart (labels, dataset) =
             Labels = Seq.toArray x.Labels,
             Datasets =
                 [|
-                    ChartJs.LineChartDataset(Data = Seq.toArray x.Dataset)
+                    ChartJs.LineChartDataset(
+                        FillColor        = Color.ToString (Color.Translucent x.Color 0.2),
+                        StrokeColor      = Color.ToString x.Color,
+                        PointColor       = Color.ToString x.Color,
+                        PointStrokeColor = Color.ToString Color.White,
+                        Data             = Seq.toArray x.Dataset
+                    )
                 |]
         )
         |> ChartJs.Chart(x.Context).Line
