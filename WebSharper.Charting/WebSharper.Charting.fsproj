@@ -51,6 +51,7 @@
     <Compile Include="Color.fs" />
     <Compile Include="Chart.fs" />
     <Compile Include="LineChart.fs" />
+    <Compile Include="RadarChart.fs" />
     <Compile Include="Charting.fs" />
     <None Include="packages.config" />
     <None Include="app.config" />

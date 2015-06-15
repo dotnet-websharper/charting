@@ -12,3 +12,11 @@ module Charting =
             |> Array.unzip
         
         LineChart (labels, dataset)
+
+    let RadarChart mapping data =
+        let (labels, dataset) =
+            Seq.map mapping data
+            |> Seq.toArray
+            |> Array.unzip
+        
+        RadarChart (labels, dataset)
