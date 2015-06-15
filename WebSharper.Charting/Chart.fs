@@ -3,49 +3,36 @@ namespace WebSharper.Charting
 open WebSharper
 open WebSharper.JavaScript
 
-type   Pagelet = Html.Client.Pagelet 
-module Tags    = Html.Client.Tags
+type Pagelet = Html.Client.Pagelet
 
-[<JavaScript>]
-type Chart () =
+[<AbstractClass; JavaScript>]
+type Chart<'T when 'T :> Chart<'T>> (width, height, color) =
     inherit Pagelet ()
 
     let canvas =
         JS.Document.CreateElement "canvas"
-        |> Canvas.Resize (400, 300)
+        |> Canvas.Resize (width, height)
         |> (fun canvas ->
             canvas :> Dom.Node
         )
+    override x.Body = canvas
 
-    override x.Body =
-        Tags.Div [
-            match x.Title with
-            | Some title ->
-                yield Tags.H2 [ Tags.Text title ]
-            | _ ->
-                ()
-        ]
-        |> (fun con ->
-            con.Body.AppendChild canvas |> ignore
-            con.Body
-        )
+    new () = Chart (400, 300, Color.RGBa (0, 0, 255))
 
     member internal x.Context = Canvas.GetContext canvas
     
-    member val Color = Color.RGBa (0, 0, 255, 1.0) with get, set
-    member val Title : string option = None with get, set
+    member x.Width  = width
+    member x.Height = height
+    member x.Color  = color
 
-    static member WithDimension dimension (chart : #Chart) =
-        Canvas.Resize dimension chart.Context.Canvas |> ignore
+    abstract member WithDimension : int * int -> 'T
+    abstract member WithColor     : (float -> string) -> 'T
 
-        chart
+[<JavaScript>]
+module Chart =
     
-    static member WithColor color (chart : #Chart) =
-        chart.Color <- color
+    let WithDimension dimension (chart : 'T when 'T :> Chart<'T>) =
+        chart.WithDimension dimension
 
-        chart
-
-    static member WithTitle title (chart : #Chart) =
-        chart.Title <- Some title
-
-        chart
+    let WithColor color (chart : 'T when 'T :> Chart<'T>) =
+        chart.WithColor color
