@@ -3,3 +3,5 @@ WebSharper.Charting.Tests/*
 packages/*
 WebSharper.Charting/bin/*
 WebSharper.Charting/obj/*
+build/*
+tools/packages/*

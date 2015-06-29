@@ -1,0 +1,30 @@
+#load "tools/includes.fsx"
+
+open IntelliFactory.Build
+
+let bt =
+    BuildTool().PackageId("WebSharper.Charting")
+        .VersionFrom("WebSharper")
+        .WithFramework(fun f -> f.Net40)
+
+let main =
+    bt.WebSharper.Library("WebSharper.Charting")
+        .SourcesFromProject()
+        .References(fun r ->
+            [ r.NuGet("WebSharper.ChartJs").Reference() ]
+        )
+
+bt.Solution [
+    main
+    bt.NuGet.CreatePackage()
+        .Configure(fun configuration ->
+            { configuration with
+                Title = Some "WebSharper.Charting"
+                LicenseUrl = Some "http://websharper.com/licensing"
+                ProjectUrl = Some "https://github.com/intellifactory/websharper.charting"
+                Description = "Chart combinator-library for WebSharper"
+                Authors = [ "IntelliFactory" ]
+                RequiresLicenseAcceptance = true })
+        .Add(main)
+]
+|> bt.Dispatch
