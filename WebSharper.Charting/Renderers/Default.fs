@@ -10,6 +10,7 @@ module Renderers =
     type Default () =
         let canvas = Canvas []
         let mutable chart = null
+        let mutable pc = 0
 
         interface IRenderer<string * float> with
             member this.Body = canvas    
@@ -40,12 +41,8 @@ module Renderers =
 
                     chart <- ChartJs.Chart(context).Line(data, options)
 
-            member this.AddData =
-                function
-                | ((label, data), overflow) ->
-                    
-                    if overflow then
-                        Console.Log ":("
-                        chart.RemoveData()
-                    
-                    chart.AddData([| data |], label)
+            member this.AddData((label, data)) =
+                chart.AddData([| data |], label)
+
+            member this.RemoveData () =
+                chart.RemoveData()

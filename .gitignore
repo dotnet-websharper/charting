@@ -1,7 +1,8 @@
-WebSharper.Charting.Tests/*
 *.suo
-packages/*
-WebSharper.Charting/bin/*
-WebSharper.Charting/obj/*
-build/*
-tools/packages/*
+packages
+**/bin/
+**/obj/
+build/
+tools/packages/
+**/Content/
+**/Scripts/

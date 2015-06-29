@@ -1,46 +1,35 @@
 ﻿namespace WebSharper.Charting
 
+open System
 open WebSharper
 
 [<JavaScript>]
-type Stream<'T> private (bc) =
-    let observers : IObserver<'T> array = Array.empty
+type BufferedStream<'T> private (bc) =
     let buffer = Buffer<'T>(bc)
-    
-    let mutable lastValue : 'T option = None
+
+    member val Event = Event<_>()
+    member val Window = bc
 
     interface IObservable<'T> with
-        member this.Subscribe (observer : IObserver<'T>) =
-            observers
-            |> Array.push observer
-
+        [<JavaScript>]
+        member this.Subscribe o =
             buffer.State
-            |> Array.iter (fun value ->
-                lastValue <- Some value
-
-                this.NotifyObservers false
-            )
-
-        member this.LastValue = lastValue.Value
+            |> Array.iter o.OnNext
+            this.Event.Publish.Subscribe o
     
-    member private this.NotifyObservers o =
-        observers
-        |> Array.iter (fun observer ->
-            observer.OnChange (this, o)
-        )
+    member this.Trigger v =
+        buffer.Push v |> ignore
+        this.Event.Trigger v
 
-    member this.Push (value : 'T) =
-        lastValue <- Some value
-        
-        buffer.Push value
-        |> this.NotifyObservers
+    static member New(capacity : int) : BufferedStream<_> =
+        BufferedStream(capacity)
 
     static member FromList (source : 'T list) =
-        let stream = Stream(List.length source)
+        let stream = BufferedStream(List.length source)
 
         source
         |> List.iter (fun value ->
-            stream.Push value
+            stream.Trigger value
         )
 
         stream

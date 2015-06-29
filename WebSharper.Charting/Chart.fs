@@ -6,7 +6,7 @@ open WebSharper
 type Chart =
 
     static member Line dataset =
-        GenericChart(Renderers.Default(), Stream.FromList dataset)
+        GenericChart(Renderers.Default(), BufferedStream.FromList dataset)
     
     static member Line dataset =
         GenericChart(Renderers.Default(), dataset)

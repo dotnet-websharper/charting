@@ -6,12 +6,12 @@ open WebSharper.Html.Client
 [<JavaScript>]
 type GenericChart<'T> private (state) =
     inherit Pagelet()
-    
+
     override this.Body = state.Renderer.Body.Body
     
     override this.Render () =
-        state.Renderer.Render   state
-        state.Dataset.Subscribe this
+        state.Renderer.Render state
+        state.Dataset.Add <| fun (t :'T) -> state.Renderer.AddData t
     
     static member internal FromState state =
         GenericChart(state)
@@ -25,11 +25,7 @@ type GenericChart<'T> private (state) =
                 Width  = 400
                 Height = 300
             }
-        
+
         GenericChart(state)
-    
-    interface IObserver<'T> with
-        member this.OnChange (stream, o) =
-            state.Renderer.AddData (stream.LastValue, o)
-            
+
     member val State = state
