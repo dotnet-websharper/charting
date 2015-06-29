@@ -8,17 +8,16 @@ open WebSharper.JavaScript
 module Renderers =
     
     type Default () =
-        let canvas =
-            Canvas [
-                Width  "400"
-                Height "300"
-            ]
+        let canvas = Canvas []
         let mutable chart = null
 
         interface IRenderer<string * float> with
             member this.Body = canvas    
 
             member this.Render cs =
+                canvas.Body?width  <- cs.Width
+                canvas.Body?height <- cs.Height
+                
                 match cs.Type with
                 | Line ->
                     let data =
@@ -43,5 +42,10 @@ module Renderers =
 
             member this.AddData =
                 function
-                | (label, data) ->
+                | ((label, data), overflow) ->
+                    
+                    if overflow then
+                        Console.Log ":("
+                        chart.RemoveData()
+                    
                     chart.AddData([| data |], label)

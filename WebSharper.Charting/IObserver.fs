@@ -8,4 +8,4 @@ type IObservable<'T> =
     abstract member LastValue : 'T
 
 and [<JavaScript>] IObserver<'T> =
-    abstract member OnChange : IObservable<'T> -> unit
+    abstract member OnChange : IObservable<'T> * bool -> unit

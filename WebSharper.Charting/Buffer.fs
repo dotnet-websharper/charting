@@ -24,5 +24,8 @@ type private Buffer<'T> (capacity) =
 
         if backing.Length > capacity then
             Array.shift backing
+            true
+        else
+            false
     
     member this.State = backing
