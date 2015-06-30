@@ -7,7 +7,32 @@ open WebSharper.JavaScript
 [<JavaScript>]
 module Renderers =
     
-    type Default () =
+    module private ChartTypes =
+        let getChartJsConfig = function
+            | Line ->
+                ChartJs.LineChartConfiguration(
+                    BezierCurve = false,
+                    DatasetFill = false
+                )
+            | Pie ->
+                ChartJs.PieChartConfiguration(
+                    BezierCurve = false,
+                    DatasetFill = false
+                )
+
+        let toChartJsChart context (options : ChartJs.GlobalChartConfiguration) = function
+            | Line -> 
+                let data = 
+                    ChartJs.LineChartData(
+                        Labels = Array.empty,
+                        Datasets = [|ChartJs.LineChartDataset(Data = Array.empty)|])
+                ChartJs.Chart(context).Line(data, options)
+
+//            | Pie
+//            | Doughnut
+//            | Radar
+
+    type ChartJsRenderer () =
         let canvas = Canvas []
 
         let mutable chart = null
