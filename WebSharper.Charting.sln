@@ -5,7 +5,7 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WebSharper.Charting", "WebSharper.Charting\WebSharper.Charting.fsproj", "{6BADB6FE-E6AD-45F5-A66F-0C738EE479E5}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WebSharper.Charting.Testt", "WebSharper.Charting.Testt\WebSharper.Charting.Testt.fsproj", "{DC9B9D9E-A2B4-4FF8-B348-7E208774A818}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "WebSharper.Charting.Test", "WebSharper.Charting.Test\WebSharper.Charting.Test.fsproj", "{DC9B9D9E-A2B4-4FF8-B348-7E208774A818}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

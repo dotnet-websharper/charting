@@ -8,7 +8,6 @@ type BufferedStream<'T> private (bc) =
     let buffer = Buffer<'T>(bc)
 
     member val Event = Event<_>()
-    member val Window = bc
 
     interface IObservable<'T> with
         [<JavaScript>]

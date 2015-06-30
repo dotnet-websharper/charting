@@ -9,8 +9,10 @@ module Renderers =
     
     type Default () =
         let canvas = Canvas []
+
         let mutable chart = null
         let mutable pc = 0
+        let mutable window = None
 
         interface IRenderer<string * float> with
             member this.Body = canvas    
@@ -18,7 +20,9 @@ module Renderers =
             member this.Render cs =
                 canvas.Body?width  <- cs.Width
                 canvas.Body?height <- cs.Height
-                
+
+                window <- cs.Window
+
                 match cs.Type with
                 | Line ->
                     let data =
@@ -42,7 +46,9 @@ module Renderers =
                     chart <- ChartJs.Chart(context).Line(data, options)
 
             member this.AddData((label, data)) =
-                chart.AddData([| data |], label)
+                if window.IsSome then
+                    if pc >= window.Value then chart.RemoveData()
 
-            member this.RemoveData () =
-                chart.RemoveData()
+                pc <- pc + 1
+
+                chart.AddData([| data |], label)

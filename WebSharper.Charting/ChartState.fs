@@ -11,10 +11,10 @@ type ChartState<'T> =
         Type : ChartType
         Width  : int
         Height : int
+        Window : int option
     }
 
 and [<JavaScript>] IRenderer<'T> =
     abstract member Body    : Element
     abstract member Render  : ChartState<'T> -> unit
     abstract member AddData : 'T -> unit
-    abstract member RemoveData : unit -> unit
