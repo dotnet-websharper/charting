@@ -34,11 +34,43 @@ module Client =
         }
         |> Async.Start
         
+        let randomColor () =
+            let tochar c =
+                if c < 10 then string c
+                else 
+                    let b = (int 'a') + c - 10
+                    string <| char b
+
+            let to16bits (c : int) =
+                let a = c / 16
+                let b = c % 16
+                (tochar a) + (tochar b)
+
+            [ for _ in 1 .. 3 -> to16bits <| rand.Next 256 ]
+            |> String.concat ""
+
+        let area =
+            [
+                "pear", 32.
+                "strawberry", 23.
+                "blueberry", 5.
+            ]
+            |> List.map (fun (l, v) ->
+                ChartJs.PolarAreaChartDataset(
+                    Color = "#" + randomColor (),
+                    Label = l,
+                    Value = v
+                ))
+            |> BufferedStream.FromList
         
         Div [
-            Chart.Line s
+            Chart.Bar s
             |> Chart.WithDimension (600, 300)
             |> Chart.WithWindow 5
+        ] -< [
+            Br []
+        ] -< [
+            Chart.Area area
         ] -< [
             Br []
         ]
