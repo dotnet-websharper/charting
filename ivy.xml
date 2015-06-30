@@ -3,5 +3,6 @@
   <dependencies>
     <dependency name="websharper" rev="latest.integration" />
     <dependency name="websharper.chartjs" rev="latest.integration" />
+    <dependency name="intellifactory.reactive" rev="latest.integration" />
   </dependencies>
 </ivy-module>
