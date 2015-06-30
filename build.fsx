@@ -5,17 +5,27 @@ open IntelliFactory.Build
 let bt =
     BuildTool().PackageId("WebSharper.Charting")
         .VersionFrom("WebSharper")
-        .WithFramework(fun f -> f.Net40)
 
 let main =
     bt.WebSharper.Library("WebSharper.Charting")
         .SourcesFromProject()
         .References(fun r ->
-            [ r.NuGet("WebSharper.ChartJs").Reference() ]
-        )
+            [ 
+                r.NuGet("WebSharper.ChartJs").Reference() 
+                r.NuGet("IntelliFactory.Reactive").Reference() 
+            ])
+
+let test =
+    bt.WebSharper.Library("WebSharper.Charting.Test")
+        .References(fun r ->
+            [ 
+                r.Project main
+            ])
 
 bt.Solution [
     main
+    test
+
     bt.NuGet.CreatePackage()
         .Configure(fun configuration ->
             { configuration with
