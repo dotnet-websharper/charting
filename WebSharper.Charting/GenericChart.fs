@@ -10,7 +10,7 @@ type GenericChart<'T> private (state) =
     member val Stream = state.Dataset
 
     override this.Body = state.Renderer.Body.Body
-    
+
     override this.Render () =
         state.Renderer.Render state
         // TODO memory leak

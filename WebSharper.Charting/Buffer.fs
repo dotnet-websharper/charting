@@ -13,10 +13,9 @@ module internal Array =
     let shift (_ : 'T array) = ()
 
 [<JavaScript>]
-type private Buffer<'T> (capacity) =
+type private Buffer<'T> (?capacity) =
+    let capacity = defaultArg capacity 500
     let backing : 'T array = Array.empty
-
-    new () = Buffer(500)
 
     member this.Push (value : 'T) =
         backing

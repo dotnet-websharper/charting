@@ -4,8 +4,11 @@ open System
 open WebSharper
 
 [<JavaScript>]
-type BufferedStream<'T> private (bc) =
-    let buffer = Buffer<'T>(bc)
+type BufferedStream<'T> private (?bc) =
+    let buffer = 
+        match bc with
+        | Some bc -> Buffer<'T>(bc)
+        | None -> Buffer<'T>()
 
     member val Event = Event<_>()
 
@@ -22,6 +25,9 @@ type BufferedStream<'T> private (bc) =
 
     static member New(capacity : int) : BufferedStream<_> =
         BufferedStream(capacity)
+
+    static member New() : BufferedStream<_> =
+        BufferedStream()
 
     static member FromList (source : 'T list) =
         let stream = BufferedStream(List.length source)
