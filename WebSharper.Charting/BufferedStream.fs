@@ -4,7 +4,7 @@ open System
 open WebSharper
 
 [<JavaScript>]
-module internal Array =
+module private Array =
     
     [<Inline "$1.push($0)">]
     let push (_ : 'T) (_ : 'T array) = ()
@@ -24,9 +24,6 @@ type private Buffer<'T> (capacity) =
 
         if backing.Length > capacity then
             Array.shift backing
-            true
-        else
-            false
     
     member this.State = backing
 

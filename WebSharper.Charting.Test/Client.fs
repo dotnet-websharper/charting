@@ -4,7 +4,6 @@ open WebSharper
 open WebSharper.JavaScript
 open WebSharper.Html.Client
 open WebSharper.Charting
-open WebSharper.Charting.Sandbox
 open IntelliFactory.Reactive
 
 [<JavaScript>]
@@ -15,19 +14,19 @@ module Client =
 
     let Main =
         let renderer = 
-            Renderers.ChartJs.LineChartRenderer({ Width = 500; Height = 500 })
+            Renderers.ChartJs.LineChartRenderer(Size(500, 200))
 
-        [ for x in 1.0 .. 10.0 -> (string x, x ** 2.0) ]
-        |> Chart.Line
+        Chart.Line([ for x in 1.0 .. 10.0 -> (string x, x ** 2.0) ])
+            .WithStrokeColor(Color.Name "blue")
         |> renderer.Render
         |> insert
 
         // live chart
 
         let liveRenderer =
-            Renderers.ChartJs.Live.LineChartRenderer({ Width = 500; Height = 500 }, 10)
+            Renderers.ChartJs.Live.LineChartRenderer(Size(500, 200), 10)
 
-        let stream = BufferedStream<float>.New 40
+        let stream = BufferedStream<float>(40)
         
         stream
         |> LiveChart.Line

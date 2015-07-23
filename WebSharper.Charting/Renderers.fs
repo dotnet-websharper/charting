@@ -1,5 +1,6 @@
 ﻿namespace WebSharper.Charting
 
+open System
 open WebSharper
 
 [<JavaScript>]
@@ -33,7 +34,12 @@ module Renderers =
                                 Labels   = (chart.DataSet |> Seq.map fst |> Seq.toArray),
                                 Datasets = 
                                     [| ChartJs.LineChartDataset(
-                                        Data = (chart.DataSet |> Seq.map snd |> Seq.toArray)) |])
+                                        Label = chart.Config.Title,
+                                        FillColor = (string chart.Config.FillColor),
+                                        StrokeColor = (string chart.Config.StrokeColor),
+                                        PointColor = (string chart.Config.PointColor),
+                                        Data = (chart.DataSet |> Seq.map snd |> Seq.toArray)) 
+                                    |])
 
                         let options =
                             defaultArg
@@ -59,7 +65,13 @@ module Renderers =
                                 ChartJs.LineChartData(
                                     Labels   = [||],
                                     Datasets = 
-                                        [| ChartJs.LineChartDataset(Data = [||]) |])
+                                        [| ChartJs.LineChartDataset(
+                                            Label = chart.Config.Title,
+                                            FillColor = (string chart.Config.FillColor),
+                                            StrokeColor = (string chart.Config.StrokeColor),
+                                            PointColor = (string chart.Config.PointColor),
+                                            Data = [||])
+                                        |])
 
                             let options =
                                 defaultArg
