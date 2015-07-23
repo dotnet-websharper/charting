@@ -48,12 +48,8 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="Buffer.fs" />
-    <Compile Include="Stream.fs" />
-    <Compile Include="ChartType.fs" />
-    <Compile Include="ChartState.fs" />
-    <Compile Include="GenericChart.fs" />
-    <Compile Include="Renderers\Default.fs" />
-    <Compile Include="Chart.fs" />
+    <Compile Include="BufferedStream.fs" />
+    <Compile Include="Sandbox.fs" />
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>

@@ -134,6 +134,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Web" />
+    <Reference Include="WebSharper.ChartJs">
+      <HintPath>..\packages\WebSharper.ChartJs.3.2.10.34\lib\net40\WebSharper.ChartJs.dll</HintPath>
+    </Reference>
     <Reference Include="WebSharper.Collections">
       <HintPath>..\packages\WebSharper.3.2.11.173\lib\net40\WebSharper.Collections.dll</HintPath>
       <Private>True</Private>
