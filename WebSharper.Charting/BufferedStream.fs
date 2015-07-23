@@ -4,8 +4,35 @@ open System
 open WebSharper
 
 [<JavaScript>]
-type BufferedStream<'T> private (bc) =
-    let buffer = Buffer<'T>(bc)
+module internal Array =
+    
+    [<Inline "$1.push($0)">]
+    let push (_ : 'T) (_ : 'T array) = ()
+
+    [<Inline "$0.shift()">]
+    let shift (_ : 'T array) = ()
+
+[<JavaScript>]
+type private Buffer<'T> (capacity) =
+    let backing : 'T array = Array.empty
+
+    new () = Buffer(500)
+
+    member this.Push (value : 'T) =
+        backing
+        |> Array.push value
+
+        if backing.Length > capacity then
+            Array.shift backing
+            true
+        else
+            false
+    
+    member this.State = backing
+
+[<JavaScript>]
+type BufferedStream<'T> (capacity) =
+    let buffer = Buffer<'T>(capacity)
 
     member val Event = Event<_>()
 
@@ -20,15 +47,13 @@ type BufferedStream<'T> private (bc) =
         buffer.Push v |> ignore
         this.Event.Trigger v
 
-    static member New(capacity : int) : BufferedStream<_> =
-        BufferedStream(capacity)
-
+[<JavaScript>]
+type BufferedStream =
     static member FromList (source : 'T list) =
         let stream = BufferedStream(List.length source)
 
         source
         |> List.iter (fun value ->
-            stream.Trigger value
-        )
+            stream.Trigger value)
 
         stream
