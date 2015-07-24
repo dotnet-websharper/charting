@@ -10,83 +10,196 @@ module Renderers =
 
     open Charts
 
-    [<Interface>]
-    type IRenderer<'T when 'T :> GenericChart<'T>> =
-        abstract member Render : 'T -> Element
+    type RenderConfig =
+        { Size : Size }
+    
+    let private defaultSize = Pervasives.Size(500, 200)
 
-    module ChartJs =
-        open WebSharper.ChartJs
-
+    module internal ChartJsInternal =
         let private withNewCanvas (size : Size) k =
             let (Size (width, height)) = size
             Canvas [ Attr.Width <| string width; Attr.Height <| string height ]
             |>! OnAfterRender (fun c ->
                 let ctx = (As<CanvasElement> c.Body).GetContext("2d")
                 k c ctx)
-            
-        type LineChartRenderer(canvasSize : Size, ?options : ChartJs.LineChartConfiguration) =
-            interface IRenderer<LineChart> with
 
-                override x.Render chart =
-                    withNewCanvas canvasSize <| fun canvas ctx ->
-                        let data =
-                            ChartJs.LineChartData(
-                                Labels   = (chart.DataSet |> Seq.map fst |> Seq.toArray),
-                                Datasets = 
-                                    [| ChartJs.LineChartDataset(
-                                        Label = chart.Config.Title,
-                                        FillColor = (string chart.Config.FillColor),
-                                        StrokeColor = (string chart.Config.StrokeColor),
-                                        PointColor = (string chart.Config.PointColor),
-                                        Data = (chart.DataSet |> Seq.map snd |> Seq.toArray)) 
-                                    |])
+        let private mkInitial dataSet window =
+            match dataSet with
+            | DataType.Live l -> [||]
+            | DataType.Static s -> 
+                window
+                |> Option.fold (fun s w ->
+                    let skp = s.Length - w
+                    if skp >= s.Length then [||]
+                    elif skp <= 0 then s
+                    else s.[skp..]
+                ) (Seq.toArray s)
 
-                        let options =
-                            defaultArg
-                            <| options
-                            <| ChartJs.LineChartConfiguration(
-                                BezierCurve = false,
-                                DatasetFill = false)
+        let private onEvent dataSet window remove add =
+            match dataSet with
+            | DataType.Live o ->
+                let size = ref 0
+                o.Add <| fun data ->
+                    window |> Option.iter (fun window -> if !size >= window then remove ())
+                    add data
+                    incr size
+            | _ -> ()
 
-                        ChartJs.Chart(ctx).Line(data, options) |> ignore
 
-            [<Name "__Render">]
-            member x.Render chart = (x :> IRenderer<LineChart>).Render chart
+        let RenderLineChart (chart : LineChart) size cfg window =
+            withNewCanvas size <| fun canvas ctx ->
+                let initial = mkInitial chart.DataSet window 
 
-        module Live =
-            type LineChartRenderer(canvasSize : Size, ?window : int, ?options : ChartJs.LineChartConfiguration) =
-                let window = defaultArg window 50
+                let data =
+                    ChartJs.LineChartData(
+                        Labels   = (initial |> Array.map fst),
+                        Datasets = 
+                            [| ChartJs.LineChartDataset(
+                                Label = chart.Config.Title,
+                                FillColor = (string chart.Config.FillColor),
+                                StrokeColor = (string chart.Config.StrokeColor),
+                                PointColor = (string chart.Config.PointColor),
+                                Data = (initial |> Array.map snd)) 
+                            |])
 
-                interface IRenderer<LiveLineChart> with
+                let options =
+                    defaultArg
+                    <| cfg
+                    <| ChartJs.LineChartConfiguration(
+                        BezierCurve = false,
+                        DatasetFill = false)
 
-                    override x.Render chart =
-                        withNewCanvas canvasSize <| fun canvas ctx ->
-                            let data =
-                                ChartJs.LineChartData(
-                                    Labels   = [||],
-                                    Datasets = 
-                                        [| ChartJs.LineChartDataset(
-                                            Label = chart.Config.Title,
-                                            FillColor = (string chart.Config.FillColor),
-                                            StrokeColor = (string chart.Config.StrokeColor),
-                                            PointColor = (string chart.Config.PointColor),
-                                            Data = [||])
-                                        |])
+                let rendered = ChartJs.Chart(ctx).Line(data, options)
 
-                            let options =
-                                defaultArg
-                                <| options
-                                <| ChartJs.LineChartConfiguration(
-                                    BezierCurve = false,
-                                    DatasetFill = false)
+                match chart.DataSet with
+                | DataType.Live o ->
+                    let size = ref 0
+                    o.Add <| fun (label, data) ->
+                        window |> Option.iter (fun window -> if !size >= window then rendered.RemoveData ())
+                        rendered.AddData([|data|], label)
+                        incr size
+                | _ -> ()
 
-                            let ch = ChartJs.Chart(ctx).Line(data, options)
-                            let size = ref 0
+        let RenderBarChart (chart : BarChart) size cfg window =
+            withNewCanvas size <| fun canvas ctx ->
+                let initial = mkInitial chart.DataSet window
 
-                            chart.DataSet.Add <| fun (label, data) ->
-                                if !size >= window then ch.RemoveData()
-                                ch.AddData([|data|], label)
-                                incr size
+                let data =
+                    ChartJs.BarChartData(
+                        Labels   = (initial |> Array.map fst),
+                        Datasets = 
+                            [| ChartJs.BarChartDataset(
+                                Label = chart.Config.Title,
+                                FillColor = (string chart.Config.FillColor),
+                                StrokeColor = (string chart.Config.StrokeColor),
+                                Data = (initial |> Array.map snd)) 
+                            |])
 
-                [<Name "__Render">]
-                member x.Render chart = (x :> IRenderer<LiveLineChart>).Render chart
+                let options =
+                    defaultArg
+                    <| cfg
+                    <| ChartJs.BarChartConfiguration(
+                        BarShowStroke = true)
+
+                let rendered = ChartJs.Chart(ctx).Bar(data, options)
+
+                match chart.DataSet with
+                | DataType.Live o ->
+                    let size = ref 0
+                    o.Add <| fun (label, data) ->
+                        window |> Option.iter (fun window -> if !size >= window then rendered.RemoveData ())
+                        rendered.AddData([|data|], label)
+                        incr size
+                | _ -> ()
+
+        let RenderRadarChart (chart : RadarChart) size cfg window =
+            withNewCanvas size <| fun canvas ctx ->
+                let initial = mkInitial chart.DataSet window
+
+                let data =
+                    ChartJs.RadarChartData(
+                        Labels   = (initial |> Array.map fst),
+                        Datasets = 
+                            [| ChartJs.RadarChartDataset(
+                                Label = chart.Config.Title,
+                                FillColor = (string chart.Config.FillColor),
+                                StrokeColor = (string chart.Config.StrokeColor),
+                                PointColor = (string chart.Config.PointColor),
+                                Data = (initial |> Array.map snd)) 
+                            |])
+
+                let options =
+                    defaultArg
+                    <| cfg
+                    <| ChartJs.RadarChartConfiguration(
+                        DatasetFill = true,
+                        DatasetStroke = true)
+
+                let rendered = ChartJs.Chart(ctx).Radar(data, options)
+
+                onEvent chart.DataSet window
+                <| fun () -> rendered.RemoveData ()
+                <| fun (label, data) -> rendered.AddData([|data|], label)
+
+        let RenderCombinedLineChart (chart : CompisiteChart<LineChart>) size cfg window =
+            withNewCanvas size <| fun canvas ctx ->
+                let labels =
+                    chart.Charts
+                    |> Seq.choose (fun chart ->
+                        match chart.DataSet with
+                        | Static s -> Some <| Seq.map fst s
+                        | Live _ -> None)
+                    |> Seq.maxBy Seq.length
+
+                let data =
+                    ChartJs.LineChartData(
+                        Labels   = (labels |> Seq.toArray),
+                        Datasets = 
+                            (chart.Charts
+                            |> Seq.map (fun chart ->
+                                let initials = mkInitial chart.DataSet window
+                                ChartJs.LineChartDataset(
+                                    Label = chart.Config.Title,
+                                    FillColor = (string chart.Config.FillColor),
+                                    StrokeColor = (string chart.Config.StrokeColor),
+                                    PointColor = (string chart.Config.PointColor),
+                                    Data = (initials |> Array.map snd))
+                            )
+                            |> Seq.toArray)
+                    )
+
+                let options =
+                    defaultArg
+                    <| cfg
+                    <| ChartJs.LineChartConfiguration(
+                        BezierCurve = false,
+                        DatasetFill = false)
+
+                ChartJs.Chart(ctx).Line(data, options) |> ignore
+
+    type ChartJs =
+        static member Render(chart : Charts.LineChart,
+                             ?Size : Size,
+                             ?Config : ChartJs.LineChartConfiguration,
+                             ?Window : int) =
+            ChartJsInternal.RenderLineChart chart (defaultArg Size defaultSize) Config Window
+
+        static member Render(chart : Charts.BarChart,
+                             ?Size : Size,
+                             ?Config : ChartJs.BarChartConfiguration,
+                             ?Window : int) =
+            ChartJsInternal.RenderBarChart chart (defaultArg Size defaultSize) Config Window
+
+        static member Render(chart : Charts.RadarChart,
+                             ?Size : Size,
+                             ?Config : ChartJs.RadarChartConfiguration,
+                             ?Window : int) =
+            ChartJsInternal.RenderRadarChart chart (defaultArg Size defaultSize) Config Window
+
+        static member Render(chart : Charts.CompisiteChart<LineChart>,
+                             ?Size : Size,
+                             ?Config : ChartJs.LineChartConfiguration,
+                             ?Window : int) =
+            ChartJsInternal.RenderCombinedLineChart chart (defaultArg Size defaultSize) Config Window
+
+        

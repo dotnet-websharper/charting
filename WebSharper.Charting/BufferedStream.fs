@@ -34,23 +34,22 @@ type BufferedStream<'T> (capacity) =
     member val Event = Event<_>()
 
     interface IObservable<'T> with
-        [<JavaScript>]
         member this.Subscribe o =
             buffer.State
             |> Array.iter o.OnNext
             this.Event.Publish.Subscribe o
-    
+
     member this.Trigger v =
         buffer.Push v |> ignore
         this.Event.Trigger v
 
-[<JavaScript>]
-type BufferedStream =
-    static member FromList (source : 'T list) =
-        let stream = BufferedStream(List.length source)
-
-        source
-        |> List.iter (fun value ->
-            stream.Trigger value)
-
-        stream
+//[<JavaScript>]
+//type BufferedStream =
+//    static member FromList (source : 'T list) =
+//        let stream = BufferedStream(List.length source)
+//
+//        source
+//        |> List.iter (fun value ->
+//            stream.Trigger value)
+//
+//        stream

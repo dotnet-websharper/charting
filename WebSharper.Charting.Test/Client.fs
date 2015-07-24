@@ -13,24 +13,44 @@ module Client =
         el.AppendTo "entry"
 
     let Main =
-        let renderer = 
-            Renderers.ChartJs.LineChartRenderer(Size(500, 200))
 
-        Chart.Line([ for x in 1.0 .. 10.0 -> (string x, x ** 2.0) ])
+        let data = [ for x in 1.0 .. 10.0 -> (string x, x ** 2.0) ]
+
+        Chart.Line(data)
             .WithStrokeColor(Color.Name "blue")
-        |> renderer.Render
+        |> fun chrt -> Renderers.ChartJs.Render(chrt)
         |> insert
 
-        // live chart
+        Chart.Radar(List.zip ["apples"; "oranges"; "strawberries"; "appricots"] [12.; 32.; 6.; 2.])
+            .WithFillColor(Color.Name "yellow")
+        |> fun c -> Renderers.ChartJs.Render(c, Size = Size(500, 500))
+        |> insert
 
-        let liveRenderer =
-            Renderers.ChartJs.Live.LineChartRenderer(Size(500, 200), 10)
+        [
+            Chart.Line([ for x in 1.0 .. 9.0 -> (string x, x) ])
+                .WithFillColor(Color.Rgba(32, 64, 128, 1.))
+
+            Chart.Line([ for x in 1.0 .. 10.0 -> (string x, x * x) ])
+                .WithFillColor(Color.Rgba(128, 64, 32, 0.1))
+        ]
+        |> Chart.Combine
+        |> fun e -> 
+            let c = ChartJs.LineChartConfiguration(DatasetFill = true)
+            Renderers.ChartJs.Render(e, Config = c)
+        |> insert
+
+        // live charts
 
         let stream = BufferedStream<float>(40)
         
+        LiveChart.Line(stream)
+            .WithFillColor(Color.Name "yellow")
+        |> Renderers.ChartJs.Render
+        |> insert
+
         stream
         |> LiveChart.Line
-        |> liveRenderer.Render
+        |> fun chrt -> Renderers.ChartJs.Render(chrt, Window = 10)
         |> insert
 
         Reactive.Select
@@ -39,7 +59,7 @@ module Client =
             (s + 1, (e * fs + c) / (fs + 1.)))
         <| fun (a, b) -> (string a, b)
         |> LiveChart.Line
-        |> liveRenderer.Render
+        |> Renderers.ChartJs.Render
         |> insert
 
         let rand = System.Random()
