@@ -42,14 +42,3 @@ type BufferedStream<'T> (capacity) =
     member this.Trigger v =
         buffer.Push v |> ignore
         this.Event.Trigger v
-
-//[<JavaScript>]
-//type BufferedStream =
-//    static member FromList (source : 'T list) =
-//        let stream = BufferedStream(List.length source)
-//
-//        source
-//        |> List.iter (fun value ->
-//            stream.Trigger value)
-//
-//        stream

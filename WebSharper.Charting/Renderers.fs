@@ -15,6 +15,11 @@ module Renderers =
     
     let private defaultSize = Pervasives.Size(500, 200)
 
+    type PolarChartType =
+        | PolarArea of ChartJs.PolarAreaChartConfiguration
+        | Pie of ChartJs.PieChartConfiguration
+        | Doughnut of ChartJs.DoughnutChartConfiguration
+
     module internal ChartJsInternal =
         let private withNewCanvas (size : Size) k =
             let (Size (width, height)) = size
@@ -41,10 +46,9 @@ module Renderers =
                 let size = ref 0
                 o.Add <| fun data ->
                     window |> Option.iter (fun window -> if !size >= window then remove ())
-                    add data
+                    add data !size
                     incr size
             | _ -> ()
-
 
         let RenderLineChart (chart : LineChart) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
@@ -71,14 +75,9 @@ module Renderers =
 
                 let rendered = ChartJs.Chart(ctx).Line(data, options)
 
-                match chart.DataSet with
-                | DataType.Live o ->
-                    let size = ref 0
-                    o.Add <| fun (label, data) ->
-                        window |> Option.iter (fun window -> if !size >= window then rendered.RemoveData ())
-                        rendered.AddData([|data|], label)
-                        incr size
-                | _ -> ()
+                onEvent chart.DataSet window
+                <| fun () -> rendered.RemoveData ()
+                <| fun (label, data) _ -> rendered.AddData([|data|], label)
 
         let RenderBarChart (chart : BarChart) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
@@ -103,14 +102,9 @@ module Renderers =
 
                 let rendered = ChartJs.Chart(ctx).Bar(data, options)
 
-                match chart.DataSet with
-                | DataType.Live o ->
-                    let size = ref 0
-                    o.Add <| fun (label, data) ->
-                        window |> Option.iter (fun window -> if !size >= window then rendered.RemoveData ())
-                        rendered.AddData([|data|], label)
-                        incr size
-                | _ -> ()
+                onEvent chart.DataSet window
+                <| fun () -> rendered.RemoveData ()
+                <| fun (label, data) _ -> rendered.AddData([|data|], label)
 
         let RenderRadarChart (chart : RadarChart) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
@@ -139,7 +133,50 @@ module Renderers =
 
                 onEvent chart.DataSet window
                 <| fun () -> rendered.RemoveData ()
-                <| fun (label, data) -> rendered.AddData([|data|], label)
+                <| fun (label, data) _ -> rendered.AddData([|data|], label)
+
+        let RenderPolarAreaChart (chart : GenericPolarAreaChart<_>) size typ =
+            withNewCanvas size <| fun canvas ctx ->
+                let initial = mkInitial chart.DataSet None
+                let convert e =
+                    match typ with
+                    | PolarChartType.PolarArea _ ->
+                        ChartJs.PolarAreaChartDataset(
+                            Color = string e.Color,
+                            Highlight = string e.Highlight,
+                            Value = e.Value,
+                            Label = e.Label)
+                    | PolarChartType.Pie _ ->
+                        ChartJs.PieChartDataset(
+                            Color = string e.Color,
+                            Highlight = string e.Highlight,
+                            Value = e.Value,
+                            Label = e.Label) :> _
+                    | PolarChartType.Doughnut _ ->
+                        ChartJs.DoughnutChartDataset(
+                            Color = string e.Color,
+                            Highlight = string e.Highlight,
+                            Value = e.Value,
+                            Label = e.Label) :> _
+
+                let data =
+                    initial
+                    |> Array.map convert
+
+                let rendered =
+                    match typ with
+                    | PolarChartType.PolarArea opts ->
+                        ChartJs.Chart(ctx).PolarArea(data, opts)
+                    | PolarChartType.Pie opts ->
+                        let d = As<ChartJs.PieChartDataset []> data 
+                        ChartJs.Chart(ctx).Pie(d, opts) :> _
+                    | PolarChartType.Doughnut opts ->
+                        let d = As<ChartJs.DoughnutChartDataset []> data 
+                        ChartJs.Chart(ctx).Doughnut(d, opts) :> _
+
+                onEvent chart.DataSet None
+                <| fun () -> ()
+                <| fun pd idx -> rendered.AddData(convert pd, idx)
 
         let RenderCombinedLineChart (chart : CompisiteChart<LineChart>) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
@@ -195,6 +232,24 @@ module Renderers =
                              ?Config : ChartJs.RadarChartConfiguration,
                              ?Window : int) =
             ChartJsInternal.RenderRadarChart chart (defaultArg Size defaultSize) Config Window
+
+        static member Render(chart : Charts.PieChart,
+                             ?Size : Size,
+                             ?Config : ChartJs.PieChartConfiguration) =
+            let typ = PolarChartType.Pie <| defaultArg Config (ChartJs.PieChartConfiguration())
+            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ
+
+        static member Render(chart : Charts.DoughnutChart,
+                             ?Size : Size,
+                             ?Config : ChartJs.DoughnutChartConfiguration) =
+            let typ = PolarChartType.Doughnut <| defaultArg Config (ChartJs.DoughnutChartConfiguration())
+            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ
+
+        static member Render(chart : Charts.PolarAreaChart,
+                             ?Size : Size,
+                             ?Config : ChartJs.PolarAreaChartConfiguration) =
+            let typ = PolarChartType.PolarArea <| defaultArg Config (ChartJs.PolarAreaChartConfiguration())
+            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ
 
         static member Render(chart : Charts.CompisiteChart<LineChart>,
                              ?Size : Size,

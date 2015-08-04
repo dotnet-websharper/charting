@@ -33,6 +33,25 @@ module Charts =
           StrokeColor = Color.Rgba(220, 220, 220, 1.)
           PointColor = Color.Rgba(220, 220, 220, 1.) }
 
+    type PolarData =
+        { Value : float 
+          Color : Color 
+          Highlight : Color
+          Label : string }
+
+    let internal defaultPolarData =
+        let rand = System.Random()
+        fun label data ->
+            let color, highlight =
+                let r = rand.Next(0, 256)
+                let g = rand.Next(0, 256)
+                let b = rand.Next(0, 256)
+                Color.Rgba(r, g, b, 1.), Color.Rgba(r, g, b, 0.6)
+            { Value = data
+              Color = color
+              Highlight = highlight
+              Label = label }
+
     [<Interface>]
     type GenericChart<'Self when 'Self :> GenericChart<'Self>> =
         abstract member Config : GenericChartConfig
@@ -140,6 +159,116 @@ module Charts =
         [<Name "__WithStrokeColor">]
         member x.WithStrokeColor color = (cst x).WithStrokeColor(color)
 
+    // TODO most of the config doesn't make sense here
+    [<Interface>]
+    type GenericPolarAreaChart<'Self when 'Self :> GenericPolarAreaChart<'Self>> =
+        inherit GenericChart<'Self>
+        
+        abstract member DataSet : DataType<PolarData>
+
+    type PolarAreaChart internal (dataset : DataType<PolarData>, cfg : GenericChartConfig) =
+        let cst x = (x :> GenericPolarAreaChart<PolarAreaChart>)
+
+        interface GenericPolarAreaChart<PolarAreaChart> with
+            override x.Config = cfg
+            override x.DataSet = dataset
+
+            override x.WithTitle(title) = PolarAreaChart(dataset, { cfg with Title = title })
+            override x.WithXAxis(xAxis) = PolarAreaChart(dataset, { cfg with XAxis = xAxis })
+            override x.WithYAxis(yAxis) = PolarAreaChart(dataset, { cfg with YAxis = yAxis })
+            override x.WithFillColor(color) = PolarAreaChart(dataset, { cfg with FillColor = color })
+            override x.WithStrokeColor(color) = PolarAreaChart(dataset, { cfg with StrokeColor = color })
+
+        member x.Config 
+            with [<Name "get__Config">] get () = (cst x).Config
+
+        member x.DataSet 
+            with [<Name "__DataSet">] get () = (cst x).DataSet
+
+        [<Name "__WithTitle">]
+        member x.WithTitle title = (cst x).WithTitle(title)
+
+        [<Name "__WithXAxis">]
+        member x.WithXAxis xAxis = (cst x).WithXAxis(xAxis)
+
+        [<Name "__WithYAxis">]
+        member x.WithYAxis yAxis = (cst x).WithYAxis(yAxis)
+
+        [<Name "__WithFillColor">]
+        member x.WithFillColor color = (cst x).WithFillColor(color)
+
+        [<Name "__WithStrokeColor">]
+        member x.WithStrokeColor color = (cst x).WithStrokeColor(color)
+
+    type PieChart internal (dataset : DataType<PolarData>, cfg : GenericChartConfig) =
+        let cst x = (x :> GenericPolarAreaChart<PieChart>)
+
+        interface GenericPolarAreaChart<PieChart> with
+            override x.Config = cfg
+            override x.DataSet = dataset
+
+            override x.WithTitle(title) = PieChart(dataset, { cfg with Title = title })
+            override x.WithXAxis(xAxis) = PieChart(dataset, { cfg with XAxis = xAxis })
+            override x.WithYAxis(yAxis) = PieChart(dataset, { cfg with YAxis = yAxis })
+            override x.WithFillColor(color) = PieChart(dataset, { cfg with FillColor = color })
+            override x.WithStrokeColor(color) = PieChart(dataset, { cfg with StrokeColor = color })
+
+        member x.Config 
+            with [<Name "get__Config">] get () = (cst x).Config
+
+        member x.DataSet 
+            with [<Name "get__DataSet">] get () = (cst x).DataSet
+
+        [<Name "__WithTitle">]
+        member x.WithTitle title = (cst x).WithTitle(title)
+
+        [<Name "__WithXAxis">]
+        member x.WithXAxis xAxis = (cst x).WithXAxis(xAxis)
+
+        [<Name "__WithYAxis">]
+        member x.WithYAxis yAxis = (cst x).WithYAxis(yAxis)
+
+        [<Name "__WithFillColor">]
+        member x.WithFillColor color = (cst x).WithFillColor(color)
+
+        [<Name "__WithStrokeColor">]
+        member x.WithStrokeColor color = (cst x).WithStrokeColor(color)
+            
+
+    type DoughnutChart internal (dataset : DataType<PolarData>, cfg : GenericChartConfig) =
+        let cst x = (x :> GenericPolarAreaChart<DoughnutChart>)
+
+        interface GenericPolarAreaChart<DoughnutChart> with
+            override x.Config = cfg
+            override x.DataSet = dataset
+
+            override x.WithTitle(title) = DoughnutChart(dataset, { cfg with Title = title })
+            override x.WithXAxis(xAxis) = DoughnutChart(dataset, { cfg with XAxis = xAxis })
+            override x.WithYAxis(yAxis) = DoughnutChart(dataset, { cfg with YAxis = yAxis })
+            override x.WithFillColor(color) = DoughnutChart(dataset, { cfg with FillColor = color })
+            override x.WithStrokeColor(color) = DoughnutChart(dataset, { cfg with StrokeColor = color })
+
+        member x.Config 
+            with [<Name "get__Config">] get () = (cst x).Config
+
+        member x.DataSet
+            with [<Name "get__DataSet">] get () = (cst x).DataSet
+
+        [<Name "__WithTitle">]
+        member x.WithTitle title = (cst x).WithTitle(title)
+
+        [<Name "__WithXAxis">]
+        member x.WithXAxis xAxis = (cst x).WithXAxis(xAxis)
+
+        [<Name "__WithYAxis">]
+        member x.WithYAxis yAxis = (cst x).WithYAxis(yAxis)
+
+        [<Name "__WithFillColor">]
+        member x.WithFillColor color = (cst x).WithFillColor(color)
+
+        [<Name "__WithStrokeColor">]
+        member x.WithStrokeColor color = (cst x).WithStrokeColor(color)
+
     type CompisiteChart<'T when 'T :> GenericChart<'T>> internal 
         (charts : seq<'T>) =
             
@@ -155,6 +284,27 @@ type Chart =
 
     static member Radar(dataset) =
         Charts.RadarChart(Charts.Static dataset, Charts.defaultChartConfig)
+
+    static member PolarArea(dataset) =
+        Charts.PolarAreaChart(Charts.Static dataset, Charts.defaultChartConfig)
+
+    static member PolarArea(dataset : seq<string * float>) =
+        let d = dataset |> Seq.map (fun (l, v) -> Charts.defaultPolarData l v)
+        Charts.PolarAreaChart(Charts.Static d, Charts.defaultChartConfig)
+
+    static member Pie(dataset) =
+        Charts.PieChart(Charts.Static dataset, Charts.defaultChartConfig)
+
+    static member Pie(dataset : seq<string * float>) =
+        let d = dataset |> Seq.map (fun (l, v) -> Charts.defaultPolarData l v)
+        Charts.PieChart(Charts.Static d, Charts.defaultChartConfig)
+
+    static member Doughnut(dataset) =
+        Charts.DoughnutChart(Charts.Static dataset, Charts.defaultChartConfig)
+
+    static member Doughnut(dataset : seq<string * float>) =
+        let d = dataset |> Seq.map (fun (l, v) -> Charts.defaultPolarData l v)
+        Charts.DoughnutChart(Charts.Static d, Charts.defaultChartConfig)
 
     static member Combine(charts) =
         Charts.CompisiteChart(charts)
