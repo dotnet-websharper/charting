@@ -14,24 +14,25 @@ module Client =
 
     let Main =
 
-        let data = [ for x in 1.0 .. 10.0 -> (string x, x ** 2.0) ]
-
-        Chart.PolarArea(data)
-        |> Renderers.ChartJs.Render
-        |> insert
-
-        Chart.Pie(data)
-        |> Renderers.ChartJs.Render
-        |> insert
-
-        Chart.Doughnut(data)
-        |> Renderers.ChartJs.Render
-        |> insert
-
-        Chart.Radar(List.zip ["apples"; "oranges"; "strawberries"; "appricots"] [12.; 32.; 6.; 2.])
-            .WithFillColor(Color.Name "yellow")
-        |> fun c -> Renderers.ChartJs.Render(c, Size = Size(500, 500))
-        |> insert
+//        let data = [ for x in 1.0 .. 10.0 -> (string x, x ** 2.0) ]
+//
+//        Chart.PolarArea(data)
+//        |> Renderers.ChartJs.Render
+//        |> insert
+//
+//        Chart.Pie(data)
+//        |> Renderers.ChartJs.Render
+//        |> insert
+//
+//        Chart.Doughnut(data)
+//        |> Renderers.ChartJs.Render
+//        |> insert
+//
+//        Chart.Radar(List.zip ["apples"; "oranges"; "strawberries"; "appricots"] [12.; 32.; 6.; 2.])
+//            .WithFillColor(Color.Name "red")
+//            .WithPointColor(Color.Name "black")
+//        |> fun c -> Renderers.ChartJs.Render(c, Size = Size(500, 500))
+//        |> insert
 
 //        [
 //            Chart.Line([ for x in 1.0 .. 9.0 -> (string x, x) ])
@@ -48,13 +49,25 @@ module Client =
 //
         // live charts
 
-        let stream = BufferedStream<float>(40)
+        let stream1 = BufferedStream<float>(40)
+        let stream2 = BufferedStream<float>(40)
 
-        let ds = Reactive.Select stream (fun e -> (string e, e))
-        
-        LiveChart.Pie(ds)
-        |> fun c -> Renderers.ChartJs.Render(c, Window = 10)
+        [
+            LiveChart.Radar stream1
+            LiveChart.Radar(stream2)
+                .WithStrokeColor(Color.Name "red")
+                .WithFillColor(Color.Rgba(100, 160, 100, 0.1))
+        ]
+        |> Chart.Combine
+        |> fun ch -> Renderers.ChartJs.Render(ch, Window = 10)
         |> insert
+
+//
+//        let ds = Reactive.Select stream (fun e -> (string e, e))
+//        
+//        LiveChart.Pie(ds)
+//        |> fun c -> Renderers.ChartJs.Render(c, Window = 10)
+//        |> insert
 
 //
 //        stream
@@ -71,14 +84,19 @@ module Client =
 //        |> Renderers.ChartJs.Render
 //        |> insert
 //
-        let rand = System.Random()
-        async {
-            while true do
-                let iv = rand.Next(600, 1500)
-                do! Async.Sleep iv
-                stream.Trigger <| (rand.NextDouble() * 300.)
-        }
-        |> Async.Start
+        let generate (s : Event<float>) range miniv maxiv =
+            let rand = System.Random()
+            async {
+                while true do
+                    let iv = rand.Next(miniv, maxiv)
+                    do! Async.Sleep iv
+                    let a = rand.NextDouble() * range
+                    s.Trigger a
+            }
+            |> Async.Start
+
+        generate stream1.Event 300. 200 250
+        generate stream2.Event 100. 1000 1050
 
 
         

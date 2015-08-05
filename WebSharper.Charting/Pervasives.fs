@@ -24,3 +24,22 @@ module Pervasives =
         Reactive.Select
         <| Reactive.Aggregate stream (0, 0.0) (fun (s, _) c -> (s + 1, c)) 
         <| fun (a, b) -> (string a, b)
+
+    module internal Seq =
+        let headOption s =
+            if Seq.isEmpty s then None
+            else Some <| Seq.nth 0 s
+
+    module internal Reactive =
+        let rec private sequence acc = function
+            | [] -> acc
+            | x :: xs ->
+                sequence (Reactive.CombineOnlyNew acc x <| fun o c ->
+                    Seq.append o <| Seq.singleton c) xs
+
+        let SequenceOnlyNew streams =
+            
+            match Seq.toList streams with
+            | [] -> Reactive.Return Seq.empty
+            | x :: xs ->
+                sequence (Reactive.Select x Seq.singleton) xs

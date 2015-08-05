@@ -323,7 +323,7 @@ module Charts =
         [<Name "__WithTitle">]
         member x.WithTitle title = (cst x).WithTitle(title)
 
-    type CompositeChart<'T when 'T :> IChart<'T>> internal 
+    type CompositeChart<'T when 'T :> ISeriesChart<'T>> internal 
         (charts : seq<'T>) =
             
         member x.Charts = charts

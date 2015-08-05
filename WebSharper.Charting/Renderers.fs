@@ -8,14 +8,13 @@ module Renderers =
     open WebSharper.JavaScript
     open WebSharper.Html.Client
 
+    open IntelliFactory.Reactive
+
     open Charts
 
-    type RenderConfig =
-        { Size : Size }
-    
     let private defaultSize = Pervasives.Size(500, 200)
 
-    type PolarChartType =
+    type internal PolarChartType =
         | PolarArea of ChartJs.PolarAreaChartConfiguration
         | Pie of ChartJs.PieChartConfiguration
         | Doughnut of ChartJs.DoughnutChartConfiguration
@@ -184,8 +183,28 @@ module Renderers =
                 <| fun _ _ -> rendered.RemoveData 0
                 <| fun size data -> rendered.AddData(convert data, size)
 
+        let private extractStreams dataSet =
+            dataSet
+            |> Seq.mapi (fun i data -> 
+                match data with
+                | DataType.Live s -> 
+                    Some <| Reactive.Select s (fun d -> (i, d))
+                | DataType.Static _ -> None)
+            |> Seq.choose id
+            |> Reactive.SequenceOnlyNew
 
-        // Better combined renderer?
+        let private onCombinedEvent (streams : IObservable<seq<int * (string * float)>>) l window remove add =
+            let size = ref 0
+            streams.Add <| fun data ->
+                window |> Option.iter (fun window -> if !size >= window then remove window !size)
+                let arr = [| for i in 1 .. l -> 0. |]
+                data
+                |> Seq.iter (fun (i, (d, l)) -> arr.[i] <- l)
+                    
+                data |> Seq.headOption |> Option.iter (fun (_, (label, _)) -> add !size (arr, label))
+                    
+                incr size
+
         let RenderCombinedLineChart (chart : CompositeChart<LineChart>) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
                 let labels =
@@ -194,7 +213,10 @@ module Renderers =
                         match chart.DataSet with
                         | Static s -> Some <| Seq.map fst s
                         | Live _ -> None)
-                    |> Seq.maxBy Seq.length
+                    |> fun e ->
+                        if Seq.length e > 0 then
+                            Seq.maxBy Seq.length e
+                        else Seq.empty
 
                 let data =
                     ChartJs.LineChartData(
@@ -223,7 +245,118 @@ module Renderers =
                         BezierCurve = false,
                         DatasetFill = false)
 
-                ChartJs.Chart(ctx).Line(data, options) |> ignore
+                let rendered = 
+                    ChartJs.Chart(ctx).Line(data, options)
+
+                let streams =
+                    chart.Charts
+                    |> Seq.map (fun chart -> chart.DataSet)
+                    |> extractStreams
+
+                onCombinedEvent streams (Seq.length chart.Charts) window
+                <| fun _ _ -> rendered.RemoveData()
+                <| fun _ (arr, label) ->
+                    rendered.AddData(arr, label)
+
+        let RenderCombinedBarChart (chart : CompositeChart<BarChart>) size cfg window =
+            withNewCanvas size <| fun canvas ctx ->
+                let labels =
+                    chart.Charts
+                    |> Seq.choose (fun chart ->
+                        match chart.DataSet with
+                        | Static s -> Some <| Seq.map fst s
+                        | Live _ -> None)
+                    |> fun e ->
+                        if Seq.length e > 0 then
+                            Seq.maxBy Seq.length e
+                        else Seq.empty
+
+                let data =
+                    ChartJs.BarChartData(
+                        Labels   = (labels |> Seq.toArray),
+                        Datasets = 
+                            (chart.Charts
+                            |> Seq.map (fun chart ->
+                                let initials = mkInitial chart.DataSet window
+                                ChartJs.BarChartDataset(
+                                    Label = chart.Config.Title,
+                                    FillColor = (string chart.SeriesConfig.FillColor),
+                                    StrokeColor = (string chart.SeriesConfig.StrokeColor),
+                                    Data = (initials |> Array.map snd)) 
+                            )
+                            |> Seq.toArray)
+                    )
+
+                let options =
+                    defaultArg
+                    <| cfg
+                    <| ChartJs.BarChartConfiguration(BarShowStroke = true)
+
+                let rendered = 
+                    ChartJs.Chart(ctx).Bar(data, options)
+
+                let streams =
+                    chart.Charts
+                    |> Seq.map (fun chart -> chart.DataSet)
+                    |> extractStreams
+
+                onCombinedEvent streams (Seq.length chart.Charts) window
+                <| fun _ _ -> rendered.RemoveData()
+                <| fun _ (arr, label) ->
+                    rendered.AddData(arr, label)
+
+        let RenderCombinedRadarChart (chart : CompositeChart<RadarChart>) size cfg window =
+            withNewCanvas size <| fun canvas ctx ->
+                let labels =
+                    chart.Charts
+                    |> Seq.choose (fun chart ->
+                        match chart.DataSet with
+                        | Static s -> Some <| Seq.map fst s
+                        | Live _ -> None)
+                    |> fun e ->
+                        if Seq.length e > 0 then
+                            Seq.maxBy Seq.length e
+                        else Seq.empty
+
+                let data =
+                    ChartJs.RadarChartData(
+                        Labels   = (labels |> Seq.toArray),
+                        Datasets = 
+                            (chart.Charts
+                            |> Seq.map (fun chart ->
+                                let initials = mkInitial chart.DataSet window
+                                ChartJs.RadarChartDataset(
+                                    Label = chart.Config.Title,
+                                    FillColor = (string chart.SeriesConfig.FillColor),
+                                    StrokeColor = (string chart.SeriesConfig.StrokeColor),
+                                    PointColor = (string chart.ColorConfig.PointColor),
+                                    PointHighlightFill = (string chart.ColorConfig.PointHighlightFill),
+                                    PointHighlightStroke = (string chart.ColorConfig.PointHighlightStroke),
+                                    PointStrokeColor = (string chart.ColorConfig.PointStrokeColor),
+                                    Data = (initials |> Array.map snd))
+                            )
+                            |> Seq.toArray)
+                    )
+
+                let options =
+                    defaultArg
+                    <| cfg
+                    <| ChartJs.RadarChartConfiguration(
+                        DatasetFill = true,
+                        DatasetStroke = true)
+
+                let rendered = 
+                    ChartJs.Chart(ctx).Radar(data, options)
+
+                let streams =
+                    chart.Charts
+                    |> Seq.map (fun chart -> chart.DataSet)
+                    |> extractStreams
+
+                onCombinedEvent streams (Seq.length chart.Charts) window
+                <| fun _ _ -> rendered.RemoveData()
+                <| fun _ (arr, label) ->
+                    rendered.AddData(arr, label)
 
     type ChartJs =
         static member Render(chart : Charts.LineChart,
@@ -271,4 +404,15 @@ module Renderers =
                              ?Window : int) =
             ChartJsInternal.RenderCombinedLineChart chart (defaultArg Size defaultSize) Config Window
 
-        
+        static member Render(chart : Charts.CompositeChart<BarChart>,
+                             ?Size : Size,
+                             ?Config : ChartJs.BarChartConfiguration,
+                             ?Window : int) =
+            ChartJsInternal.RenderCombinedBarChart chart (defaultArg Size defaultSize) Config Window
+
+        static member Render(chart : Charts.CompositeChart<RadarChart>,
+                             ?Size : Size,
+                             ?Config : ChartJs.RadarChartConfiguration,
+                             ?Window : int) =
+            ChartJsInternal.RenderCombinedRadarChart chart (defaultArg Size defaultSize) Config Window
+
