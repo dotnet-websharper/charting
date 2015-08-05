@@ -45,8 +45,8 @@ module Renderers =
             | DataType.Live o ->
                 let size = ref 0
                 o.Add <| fun data ->
-                    window |> Option.iter (fun window -> if !size >= window then remove ())
-                    add data !size
+                    window |> Option.iter (fun window -> if !size >= window then remove window !size)
+                    add !size data
                     incr size
             | _ -> ()
 
@@ -60,9 +60,12 @@ module Renderers =
                         Datasets = 
                             [| ChartJs.LineChartDataset(
                                 Label = chart.Config.Title,
-                                FillColor = (string chart.Config.FillColor),
-                                StrokeColor = (string chart.Config.StrokeColor),
-                                PointColor = (string chart.Config.PointColor),
+                                FillColor = (string chart.SeriesConfig.FillColor),
+                                StrokeColor = (string chart.SeriesConfig.StrokeColor),
+                                PointColor = (string chart.ColorConfig.PointColor),
+                                PointHighlightFill = (string chart.ColorConfig.PointHighlightFill),
+                                PointHighlightStroke = (string chart.ColorConfig.PointHighlightStroke),
+                                PointStrokeColor = (string chart.ColorConfig.PointStrokeColor),
                                 Data = (initial |> Array.map snd)) 
                             |])
 
@@ -76,8 +79,8 @@ module Renderers =
                 let rendered = ChartJs.Chart(ctx).Line(data, options)
 
                 onEvent chart.DataSet window
-                <| fun () -> rendered.RemoveData ()
-                <| fun (label, data) _ -> rendered.AddData([|data|], label)
+                <| fun _ _ -> rendered.RemoveData ()
+                <| fun _ (label, data) -> rendered.AddData([|data|], label)
 
         let RenderBarChart (chart : BarChart) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
@@ -89,8 +92,8 @@ module Renderers =
                         Datasets = 
                             [| ChartJs.BarChartDataset(
                                 Label = chart.Config.Title,
-                                FillColor = (string chart.Config.FillColor),
-                                StrokeColor = (string chart.Config.StrokeColor),
+                                FillColor = (string chart.SeriesConfig.FillColor),
+                                StrokeColor = (string chart.SeriesConfig.StrokeColor),
                                 Data = (initial |> Array.map snd)) 
                             |])
 
@@ -103,8 +106,8 @@ module Renderers =
                 let rendered = ChartJs.Chart(ctx).Bar(data, options)
 
                 onEvent chart.DataSet window
-                <| fun () -> rendered.RemoveData ()
-                <| fun (label, data) _ -> rendered.AddData([|data|], label)
+                <| fun _ _ -> rendered.RemoveData ()
+                <| fun _ (label, data) -> rendered.AddData([|data|], label)
 
         let RenderRadarChart (chart : RadarChart) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
@@ -116,9 +119,12 @@ module Renderers =
                         Datasets = 
                             [| ChartJs.RadarChartDataset(
                                 Label = chart.Config.Title,
-                                FillColor = (string chart.Config.FillColor),
-                                StrokeColor = (string chart.Config.StrokeColor),
-                                PointColor = (string chart.Config.PointColor),
+                                FillColor = (string chart.SeriesConfig.FillColor),
+                                StrokeColor = (string chart.SeriesConfig.StrokeColor),
+                                PointColor = (string chart.ColorConfig.PointColor),
+                                PointHighlightFill = (string chart.ColorConfig.PointHighlightFill),
+                                PointHighlightStroke = (string chart.ColorConfig.PointHighlightStroke),
+                                PointStrokeColor = (string chart.ColorConfig.PointStrokeColor),
                                 Data = (initial |> Array.map snd)) 
                             |])
 
@@ -132,10 +138,10 @@ module Renderers =
                 let rendered = ChartJs.Chart(ctx).Radar(data, options)
 
                 onEvent chart.DataSet window
-                <| fun () -> rendered.RemoveData ()
-                <| fun (label, data) _ -> rendered.AddData([|data|], label)
+                <| fun _ _ -> rendered.RemoveData ()
+                <| fun _ (label, data) -> rendered.AddData([|data|], label)
 
-        let RenderPolarAreaChart (chart : GenericPolarAreaChart<_>) size typ =
+        let RenderPolarAreaChart (chart : IPolarAreaChart<_>) size typ window =
             withNewCanvas size <| fun canvas ctx ->
                 let initial = mkInitial chart.DataSet None
                 let convert e =
@@ -174,11 +180,13 @@ module Renderers =
                         let d = As<ChartJs.DoughnutChartDataset []> data 
                         ChartJs.Chart(ctx).Doughnut(d, opts) :> _
 
-                onEvent chart.DataSet None
-                <| fun () -> ()
-                <| fun pd idx -> rendered.AddData(convert pd, idx)
+                onEvent chart.DataSet window
+                <| fun _ _ -> rendered.RemoveData 0
+                <| fun size data -> rendered.AddData(convert data, size)
 
-        let RenderCombinedLineChart (chart : CompisiteChart<LineChart>) size cfg window =
+
+        // Better combined renderer?
+        let RenderCombinedLineChart (chart : CompositeChart<LineChart>) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
                 let labels =
                     chart.Charts
@@ -197,9 +205,12 @@ module Renderers =
                                 let initials = mkInitial chart.DataSet window
                                 ChartJs.LineChartDataset(
                                     Label = chart.Config.Title,
-                                    FillColor = (string chart.Config.FillColor),
-                                    StrokeColor = (string chart.Config.StrokeColor),
-                                    PointColor = (string chart.Config.PointColor),
+                                    FillColor = (string chart.SeriesConfig.FillColor),
+                                    StrokeColor = (string chart.SeriesConfig.StrokeColor),
+                                    PointColor = (string chart.ColorConfig.PointColor),
+                                    PointHighlightFill = (string chart.ColorConfig.PointHighlightFill),
+                                    PointHighlightStroke = (string chart.ColorConfig.PointHighlightStroke),
+                                    PointStrokeColor = (string chart.ColorConfig.PointStrokeColor),
                                     Data = (initials |> Array.map snd))
                             )
                             |> Seq.toArray)
@@ -235,23 +246,26 @@ module Renderers =
 
         static member Render(chart : Charts.PieChart,
                              ?Size : Size,
-                             ?Config : ChartJs.PieChartConfiguration) =
+                             ?Config : ChartJs.PieChartConfiguration,
+                             ?Window : int) =
             let typ = PolarChartType.Pie <| defaultArg Config (ChartJs.PieChartConfiguration())
-            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ
+            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
 
         static member Render(chart : Charts.DoughnutChart,
                              ?Size : Size,
-                             ?Config : ChartJs.DoughnutChartConfiguration) =
+                             ?Config : ChartJs.DoughnutChartConfiguration,
+                             ?Window : int) =
             let typ = PolarChartType.Doughnut <| defaultArg Config (ChartJs.DoughnutChartConfiguration())
-            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ
+            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
 
         static member Render(chart : Charts.PolarAreaChart,
                              ?Size : Size,
-                             ?Config : ChartJs.PolarAreaChartConfiguration) =
+                             ?Config : ChartJs.PolarAreaChartConfiguration,
+                             ?Window : int) =
             let typ = PolarChartType.PolarArea <| defaultArg Config (ChartJs.PolarAreaChartConfiguration())
-            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ
+            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
 
-        static member Render(chart : Charts.CompisiteChart<LineChart>,
+        static member Render(chart : Charts.CompositeChart<LineChart>,
                              ?Size : Size,
                              ?Config : ChartJs.LineChartConfiguration,
                              ?Window : int) =

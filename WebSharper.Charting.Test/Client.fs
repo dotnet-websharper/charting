@@ -17,7 +17,6 @@ module Client =
         let data = [ for x in 1.0 .. 10.0 -> (string x, x ** 2.0) ]
 
         Chart.PolarArea(data)
-            .WithStrokeColor(Color.Name "blue")
         |> Renderers.ChartJs.Render
         |> insert
 
@@ -26,7 +25,6 @@ module Client =
         |> insert
 
         Chart.Doughnut(data)
-            .WithStrokeColor(Color.Name "blue")
         |> Renderers.ChartJs.Render
         |> insert
 
@@ -48,14 +46,16 @@ module Client =
 //            Renderers.ChartJs.Render(e, Config = c)
 //        |> insert
 //
-//        // live charts
-//
-//        let stream = BufferedStream<float>(40)
-//        
-//        LiveChart.Line(stream)
-//            .WithFillColor(Color.Name "yellow")
-//        |> Renderers.ChartJs.Render
-//        |> insert
+        // live charts
+
+        let stream = BufferedStream<float>(40)
+
+        let ds = Reactive.Select stream (fun e -> (string e, e))
+        
+        LiveChart.Pie(ds)
+        |> fun c -> Renderers.ChartJs.Render(c, Window = 10)
+        |> insert
+
 //
 //        stream
 //        |> LiveChart.Line
@@ -71,14 +71,14 @@ module Client =
 //        |> Renderers.ChartJs.Render
 //        |> insert
 //
-//        let rand = System.Random()
-//        async {
-//            while true do
-//                let iv = rand.Next(600, 1500)
-//                do! Async.Sleep iv
-//                stream.Trigger <| (rand.NextDouble() * 300.)
-//        }
-//        |> Async.Start
+        let rand = System.Random()
+        async {
+            while true do
+                let iv = rand.Next(600, 1500)
+                do! Async.Sleep iv
+                stream.Trigger <| (rand.NextDouble() * 300.)
+        }
+        |> Async.Start
 
 
         
