@@ -35,5 +35,9 @@ module Renderers = begin
             /// Renders a combined line-chart with the given options using Chart.js.
             /// For the configuration options, please refer to the Chart.js website.
             static member Render : chart:Charts.CompositeChart<Charts.LineChart> * ?Size:Pervasives.Size * ?Config:ChartJs.LineChartConfiguration * ?Window:int -> Html.Client.Element
+
+            static member Render : chart:Charts.CompositeChart<Charts.BarChart> * ?Size:Pervasives.Size * ?Config:ChartJs.BarChartConfiguration * ?Window:int -> Html.Client.Element
+
+            static member Render : chart:Charts.CompositeChart<Charts.RadarChart> * ?Size:Pervasives.Size * ?Config:ChartJs.RadarChartConfiguration * ?Window:int -> Html.Client.Element
         end
 end

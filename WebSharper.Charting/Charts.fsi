@@ -68,12 +68,18 @@ module Charts = begin
             abstract member SeriesConfig : SeriesChartConfig
         end
 
+    type IMutableChart<'T, 'U> =
+        abstract member UpdateData : props : 'U * data :'T -> unit
+        abstract member OnUpdate : ('U * 'T -> unit) -> unit
+
     type LineChart =
         class
             interface IColorChart<LineChart>
             interface ISeriesChart<LineChart>
             interface IChart<LineChart>
+            interface IMutableChart<float, int>
         
+            member UpdateData : props : int * data : float -> unit
             member WithFillColor : color:Pervasives.Color -> LineChart
             member WithPointColor : color:Pervasives.Color -> LineChart
             member WithPointHighlightFill : color:Pervasives.Color -> LineChart
@@ -92,7 +98,9 @@ module Charts = begin
     type BarChart =
         class
             interface ISeriesChart<BarChart>
-        
+            interface IMutableChart<float, int>
+
+            member UpdateData : props : int * data : float -> unit
             member WithFillColor : color:Pervasives.Color -> BarChart
             member WithStrokeColor : color:Pervasives.Color -> BarChart
             member WithTitle : title:string -> BarChart
@@ -108,7 +116,9 @@ module Charts = begin
             interface IColorChart<RadarChart>
             interface ISeriesChart<RadarChart>
             interface IChart<RadarChart>
+            interface IMutableChart<float, int>
         
+            member UpdateData : props : int * data : float -> unit
             member WithFillColor : color:Pervasives.Color -> RadarChart
             member WithPointColor : color:Pervasives.Color -> RadarChart
             member WithPointHighlightFill : color:Pervasives.Color -> RadarChart
@@ -127,6 +137,7 @@ module Charts = begin
     type IPolarAreaChart<'Self when 'Self :> IPolarAreaChart<'Self>> =
         interface
             inherit IChart<'Self>
+            inherit IMutableChart<float, int>
 
             abstract member DataSet : DataType<PolarData>
         end
@@ -134,7 +145,9 @@ module Charts = begin
     type PolarAreaChart =
         class
            interface IPolarAreaChart<PolarAreaChart>
+           interface IMutableChart<float, int>
         
+            member UpdateData : props : int * data : float -> unit
             member WithTitle : title:string -> PolarAreaChart
             member Config : ChartConfig
             member DataSet : DataType<PolarData>
@@ -143,7 +156,9 @@ module Charts = begin
     type PieChart =
         class
             interface IPolarAreaChart<PieChart>
+            interface IMutableChart<float, int>
         
+            member UpdateData : props : int * data : float -> unit
             member WithTitle : title:string -> PieChart
             member Config : ChartConfig
             member DataSet : DataType<PolarData>
@@ -152,108 +167,110 @@ module Charts = begin
     type DoughnutChart =
         class
             interface IPolarAreaChart<DoughnutChart>
+            interface IMutableChart<float, int>
         
+            member UpdateData : props : int * data : float -> unit
             member WithTitle : title:string -> DoughnutChart
             member Config : ChartConfig
             member DataSet : DataType<PolarData>
         end
 
-    type CompositeChart<'T when 'T :> IChart<'T>> =
+    type CompositeChart<'T when 'T :> ISeriesChart<'T>> =
         class
             member Charts : seq<'T>
         end
-
-    /// Shorthand functions for creating static
-    type Chart =
-        class
-            /// Creates a new bar chart from a sequence of
-            /// string and floating-point number pairs.
-            static member Bar : dataset:seq<string * float> ->BarChart
-            
-            /// Combines the given charts into one.
-            static member Combine : charts:seq<'a> ->CompositeChart<'a> when 'a :>IChart<'a>
-
-            /// Creates a new doughnut chart (special pie chart) from a
-            /// sequence of polar data.
-            static member Doughnut : dataset:seq<PolarData> ->DoughnutChart
-
-            /// Creates a new doughnut chart from a sequence of
-            /// string and floating-point number pairs.
-            static member Doughnut : dataset:seq<string * float> ->DoughnutChart
-
-            /// Creates a new line chart from a sequence of
-            /// string and floating-point number pairs.
-            static member Line : dataset:seq<string * float> ->LineChart
-        
-            /// Creates a new pie chart from a
-            /// sequence of polar data.
-            static member Pie : dataset:seq<PolarData> ->PieChart
-            
-            /// Creates a new pie chart from a sequence of
-            /// string and floating-point number pairs.
-            static member Pie : dataset:seq<string * float> ->PieChart
-            
-            /// Creates a new polar-area chart from a
-            /// sequence of polar data.
-            static member PolarArea : dataset:seq<PolarData> ->PolarAreaChart
-
-            /// Creates a new polar-area chart from a sequence of
-            /// string and floating-point number pairs.
-            static member PolarArea : dataset:seq<string * float> ->PolarAreaChart
-          
-            /// Creates a new radar chart from a sequence of
-            /// string and floating-point number pairs.
-            static member Radar : dataset:seq<string * float> ->RadarChart
-        end
-
-    type LiveChart =
-        class
-            /// Creates a new bar chart from a continuous flow of
-            /// string and floating-point number pairs.
-            static member Bar : dataset:System.IObservable<string * float> ->BarChart
-            
-            /// Creates a new bar chart from a continuous flow of
-            /// floating-point numbers.
-            static member Bar : dataset:System.IObservable<float> ->BarChart
-
-            /// Creates a new doughnut chart from a continuous flow of
-            /// polar data.
-            static member Doughnut : dataset:System.IObservable<PolarData> ->DoughnutChart
-            
-            /// Creates a new doughnut chart from a continuous flow of
-            /// string and floating-point number pairs.
-            static member Doughnut : dataset:System.IObservable<string * float> ->DoughnutChart
-            
-            /// Creates a new line chart from a continuous flow of
-            /// string and floating-point number pairs.
-            static member Line : dataset:System.IObservable<string * float> ->LineChart
-
-            /// Creates a new line chart from a continuous flow of
-            /// floating-point numbers.
-            static member Line : dataset:System.IObservable<float> ->LineChart
-
-            /// Creates a new pie chart from a continuous flow of
-            /// polar data.
-            static member Pie : dataset:System.IObservable<PolarData> ->PieChart
-            
-            /// Creates a new pie chart from a continuous flow of
-            /// string and floating-point number pairs.
-            static member Pie : dataset:System.IObservable<string * float> ->PieChart
-            
-            /// Creates a new polar-area chart from a continuous flow of
-            /// polar data.
-            static member PolarArea : dataset:System.IObservable<PolarData> ->PolarAreaChart
-            
-            /// Creates a new polar-area chart from a continuous flow of
-            /// string and floating-point number pairs.
-            static member PolarArea : dataset:System.IObservable<string * float> ->PolarAreaChart
-            
-            /// Creates a new radar chart from a continuous flow of
-            /// string and floating-point number pairs.
-            static member Radar : dataset:System.IObservable<string * float> ->RadarChart
-            
-            /// Creates a new radar chart from a continuous flow of
-            /// floating-point numbers.
-            static member Radar : dataset:System.IObservable<float> ->RadarChart
-        end
 end
+
+/// Shorthand functions for creating static
+type Chart =
+    class
+        /// Creates a new bar chart from a sequence of
+        /// string and floating-point number pairs.
+        static member Bar : dataset:seq<string * float> -> Charts.BarChart
+            
+        /// Combines the given charts into one.
+        static member Combine : charts:seq<'a> -> Charts.CompositeChart<'a> when 'a :> Charts.IChart<'a>
+
+        /// Creates a new doughnut chart (special pie chart) from a
+        /// sequence of polar data.
+        static member Doughnut : dataset:seq<Charts.PolarData> -> Charts.DoughnutChart
+
+        /// Creates a new doughnut chart from a sequence of
+        /// string and floating-point number pairs.
+        static member Doughnut : dataset:seq<string * float> -> Charts.DoughnutChart
+
+        /// Creates a new line chart from a sequence of
+        /// string and floating-point number pairs.
+        static member Line : dataset:seq<string * float> -> Charts.LineChart
+        
+        /// Creates a new pie chart from a
+        /// sequence of polar data.
+        static member Pie : dataset:seq<Charts.PolarData> -> Charts.PieChart
+            
+        /// Creates a new pie chart from a sequence of
+        /// string and floating-point number pairs.
+        static member Pie : dataset:seq<string * float> -> Charts.PieChart
+            
+        /// Creates a new polar-area chart from a
+        /// sequence of polar data.
+        static member PolarArea : dataset:seq<Charts.PolarData> -> Charts.PolarAreaChart
+
+        /// Creates a new polar-area chart from a sequence of
+        /// string and floating-point number pairs.
+        static member PolarArea : dataset:seq<string * float> -> Charts.PolarAreaChart
+          
+        /// Creates a new radar chart from a sequence of
+        /// string and floating-point number pairs.
+        static member Radar : dataset:seq<string * float> -> Charts.RadarChart
+    end
+
+type LiveChart =
+    class
+        /// Creates a new bar chart from a continuous flow of
+        /// string and floating-point number pairs.
+        static member Bar : dataset:System.IObservable<string * float> -> Charts.BarChart
+            
+        /// Creates a new bar chart from a continuous flow of
+        /// floating-point numbers.
+        static member Bar : dataset:System.IObservable<float> ->Charts.BarChart
+
+        /// Creates a new doughnut chart from a continuous flow of
+        /// polar data.
+        static member Doughnut : dataset:System.IObservable<Charts.PolarData> -> Charts.DoughnutChart
+            
+        /// Creates a new doughnut chart from a continuous flow of
+        /// string and floating-point number pairs.
+        static member Doughnut : dataset:System.IObservable<string * float> -> Charts.DoughnutChart
+            
+        /// Creates a new line chart from a continuous flow of
+        /// string and floating-point number pairs.
+        static member Line : dataset:System.IObservable<string * float> -> Charts.LineChart
+
+        /// Creates a new line chart from a continuous flow of
+        /// floating-point numbers.
+        static member Line : dataset:System.IObservable<float> -> Charts.LineChart
+
+        /// Creates a new pie chart from a continuous flow of
+        /// polar data.
+        static member Pie : dataset:System.IObservable<Charts.PolarData> -> Charts.PieChart
+            
+        /// Creates a new pie chart from a continuous flow of
+        /// string and floating-point number pairs.
+        static member Pie : dataset:System.IObservable<string * float> -> Charts.PieChart
+            
+        /// Creates a new polar-area chart from a continuous flow of
+        /// polar data.
+        static member PolarArea : dataset:System.IObservable<Charts.PolarData> -> Charts.PolarAreaChart
+            
+        /// Creates a new polar-area chart from a continuous flow of
+        /// string and floating-point number pairs.
+        static member PolarArea : dataset:System.IObservable<string * float> -> Charts.PolarAreaChart
+            
+        /// Creates a new radar chart from a continuous flow of
+        /// string and floating-point number pairs.
+        static member Radar : dataset:System.IObservable<string * float> -> Charts.RadarChart
+            
+        /// Creates a new radar chart from a continuous flow of
+        /// floating-point numbers.
+        static member Radar : dataset:System.IObservable<float> -> Charts.RadarChart
+    end

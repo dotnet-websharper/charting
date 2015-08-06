@@ -55,9 +55,9 @@ module Client =
         let stream2 = BufferedStream<float>(40)
 
 
-        let b1 = Chart.Bar data
+        let b1 = LiveChart.Radar stream1
         let b2 =
-            Chart.Bar(data)
+            LiveChart.Radar(stream2)
                 .WithStrokeColor(Color.Name "red")
                 .WithFillColor(Color.Rgba(100, 160, 100, 0.1))
 
@@ -69,15 +69,40 @@ module Client =
         |> fun ch -> Renderers.ChartJs.Render(ch, Window = 10)
         |> insert
 
-        let rnd = System.Random()
-        async {
-            while true do
-                do! Async.Sleep 3000
-                let r = rnd.NextDouble() * 100.
-                b1.UpdateData(2, r)
-                b2.UpdateData(2, r / 2.)
-        }
-        |> Async.Start
+//        let rnd = System.Random()
+//        async {
+//            while true do
+//                do! Async.Sleep 300
+//                let r = rnd.NextDouble() * 100.
+//                try
+//                    b1.UpdateData(2, r)
+//                    b2.UpdateData(2, r / 2.)
+//                with _ ->
+//                    ()
+//        }
+//        |> Async.Start
+
+        let RadarChart =
+            let labels =
+                [| "Eating"; "Drinking"; "Sleeping";
+                   "Designing"; "Coding"; "Cycling"; "Running" |]
+            let dataset1 = [|28.0; 48.0; 40.0; 19.0; 96.0; 27.0; 100.0|]
+            let dataset2 = [|65.0; 59.0; 90.0; 81.0; 56.0; 55.0; 40.0|]
+
+            Chart.Combine [
+                Chart.Radar(Array.zip labels dataset1)
+                    .WithFillColor(Color.Rgba(151, 187, 205, 0.2))
+                    .WithStrokeColor(Color.Name "blue")
+                    .WithPointColor(Color.Name "darkblue")
+
+                Chart.Radar(Array.zip labels dataset2)
+                    .WithFillColor(Color.Rgba(220, 220, 220, 0.2))
+                    .WithStrokeColor(Color.Name "green")
+                    .WithPointColor(Color.Name "darkgreen")
+            ]
+            |> fun ch -> Renderers.ChartJs.Render(ch, Size = Size(1000, 600))
+            
+        RadarChart.AppendTo "entry"
 
 //
 //        let ds = Reactive.Select stream (fun e -> (string e, e))
@@ -112,7 +137,7 @@ module Client =
             }
             |> Async.Start
 
-        generate stream1.Event 300. 200 250
+        generate stream1.Event 300. 1000 1250
         generate stream2.Event 100. 1000 1050
 
 

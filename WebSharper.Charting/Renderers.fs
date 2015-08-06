@@ -20,6 +20,36 @@ module Renderers =
         | Doughnut of ChartJs.DoughnutChartConfiguration
 
     module internal ChartJsInternal =
+        type private BatchUpdater(?interval : int, ?maxCount : int) =
+            let interval = defaultArg interval 75
+            let maxCount = defaultArg maxCount 10
+
+            let handle : JS.Handle option ref = ref None
+            let count = ref 0
+
+            member x.Update updater =
+                let doUpdate () =
+                    handle := None
+                    count := 0
+                    updater ()
+
+                !handle |> Option.iter JS.ClearTimeout
+                if !count < maxCount then
+                    incr count
+
+                    handle :=
+                        JS.SetTimeout
+                        <| doUpdate
+                        <| interval
+                        |> Some
+                else doUpdate ()
+
+        let private registerUpdater (mChart : IMutableChart<float, int>) upd fin =
+            let bu = new BatchUpdater()
+            mChart.OnUpdate <| fun (i, d) ->
+                upd(i,d)
+                bu.Update fin
+
         let private withNewCanvas (size : Size) k =
             let (Size (width, height)) = size
             Canvas [ Attr.Width <| string width; Attr.Height <| string height ]
@@ -77,11 +107,12 @@ module Renderers =
 
                 let rendered = ChartJs.Chart(ctx).Line(data, options)
 
-                (chart :> IMutableChart<float, int>).OnUpdate <| fun (i, d) ->
+                registerUpdater (chart :> IMutableChart<float, int>)
+                <| fun (i, d) ->
                     let ds : obj [] = rendered?datasets
                     let s : obj [] = ds.[0]?points
                     s.[i]?value <- d
-                    rendered.Update()
+                <| rendered.Update
 
                 onEvent chart.DataSet window
                 <| fun _ _ -> rendered.RemoveData ()
@@ -110,13 +141,12 @@ module Renderers =
 
                 let rendered = ChartJs.Chart(ctx).Bar(data, options)
 
-                JS.Global?rendered <- rendered
-
-                (chart :> IMutableChart<float, int>).OnUpdate <| fun (i, d) ->
+                registerUpdater (chart :> IMutableChart<float, int>)
+                <| fun (i, d) ->
                     let ds : obj [] = rendered?datasets
                     let s : obj [] = ds.[0]?bars
                     s.[i]?value <- d
-                    rendered.Update()
+                <| rendered.Update
 
                 onEvent chart.DataSet window
                 <| fun _ _ -> rendered.RemoveData ()
@@ -150,11 +180,12 @@ module Renderers =
 
                 let rendered = ChartJs.Chart(ctx).Radar(data, options)
 
-                (chart :> IMutableChart<float, int>).OnUpdate <| fun (i, d) ->
+                registerUpdater (chart :> IMutableChart<float, int>)
+                <| fun (i, d) ->
                     let ds : obj [] = rendered?datasets
                     let s : obj [] = ds.[0]?points
                     s.[i]?value <- d
-                    rendered.Update()
+                <| rendered.Update
 
                 onEvent chart.DataSet window
                 <| fun _ _ -> rendered.RemoveData ()
@@ -275,11 +306,12 @@ module Renderers =
 
                 chart.Charts
                 |> Seq.iteri (fun i chart ->
-                    (chart :> IMutableChart<float, int>).OnUpdate <| fun (j, d) ->
+                    registerUpdater (chart :> IMutableChart<float, int>)
+                    <| fun (j, d) ->
                         let ds : obj [] = rendered?datasets
                         let s : obj [] = ds.[i]?points
                         s.[j]?value <- d
-                        rendered.Update()
+                    <| rendered.Update
                 )
 
                 let streams =
@@ -331,11 +363,12 @@ module Renderers =
 
                 chart.Charts
                 |> Seq.iteri (fun i chart ->
-                    (chart :> IMutableChart<float, int>).OnUpdate <| fun (j, d) ->
+                    registerUpdater (chart :> IMutableChart<float, int>)
+                    <| fun (j, d) ->
                         let ds : obj [] = rendered?datasets
                         let s : obj [] = ds.[i]?bars
                         s.[j]?value <- d
-                        rendered.Update() // TODO optimize calling this
+                    <| rendered.Update
                 )
 
                 let streams =
@@ -393,11 +426,12 @@ module Renderers =
 
                 chart.Charts
                 |> Seq.iteri (fun i chart ->
-                    (chart :> IMutableChart<float, int>).OnUpdate <| fun (j, d) ->
+                    registerUpdater (chart :> IMutableChart<float, int>)
+                    <| fun (j, d) ->
                         let ds : obj [] = rendered?datasets
                         let s : obj [] = ds.[i]?points
                         s.[j]?value <- d
-                        rendered.Update()
+                    <| rendered.Update
                 )
 
                 let streams =

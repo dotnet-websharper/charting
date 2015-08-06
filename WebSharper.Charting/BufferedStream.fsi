@@ -11,6 +11,8 @@ type BufferedStream<'T> =
         /// Creates a stream with the given capacity.
         new : capacity: int -> BufferedStream<'T>
 
+        member Event : Event<'T>
+
         /// Puts a new value into the stream, then notifies every observer.
         member Trigger : v: 'T -> unit
     end
