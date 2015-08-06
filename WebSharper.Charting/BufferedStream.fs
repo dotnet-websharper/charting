@@ -4,28 +4,19 @@ open System
 open WebSharper
 
 [<JavaScript>]
-module private Array =
-    
-    [<Inline "$1.push($0)">]
-    let push (_ : 'T) (_ : 'T array) = ()
-
-    [<Inline "$0.shift()">]
-    let shift (_ : 'T array) = ()
-
-[<JavaScript>]
 type private Buffer<'T> (capacity) =
-    let backing : 'T array = Array.empty
+    let backing = System.Collections.Generic.Queue<'T>()
 
     new () = Buffer(500)
 
     member this.Push (value : 'T) =
-        backing
-        |> Array.push value
+        backing.Enqueue value
+        
 
-        if backing.Length > capacity then
-            Array.shift backing
+        if backing.Count > capacity then
+            backing.Dequeue() |> ignore
     
-    member this.State = backing
+    member this.State = backing.ToArray()
 
 [<JavaScript>]
 type BufferedStream<'T> (capacity) =

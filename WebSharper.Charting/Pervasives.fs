@@ -34,7 +34,7 @@ module Pervasives =
         let rec private sequence acc = function
             | [] -> acc
             | x :: xs ->
-                sequence (Reactive.CombineOnlyNew acc x <| fun o c ->
+                sequence (Reactive.CombineLast acc x <| fun o c ->
                     Seq.append o <| Seq.singleton c) xs
 
         let SequenceOnlyNew streams =
