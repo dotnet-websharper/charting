@@ -19,6 +19,8 @@ let test =
     bt.WebSharper.Library("WebSharper.Charting.Test")
         .References(fun r ->
             [ 
+                r.NuGet("WebSharper.ChartJs").Reference() 
+                r.NuGet("IntelliFactory.Reactive").Reference() 
                 r.Project main
             ])
 
