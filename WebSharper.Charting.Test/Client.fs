@@ -14,11 +14,13 @@ module Client =
 
     let Main =
 
-//        let data = [ for x in 1.0 .. 10.0 -> (string x, x ** 2.0) ]
-//
-//        Chart.PolarArea(data)
-//        |> Renderers.ChartJs.Render
-//        |> insert
+        let data = [ for x in 1.0 .. 9.0 -> (string x, x ** 2.0) ]
+
+        let chart = Chart.PolarArea(data)
+
+        chart
+        |> Renderers.ChartJs.Render
+        |> insert
 //
 //        Chart.Pie(data)
 //        |> Renderers.ChartJs.Render
@@ -52,15 +54,30 @@ module Client =
         let stream1 = BufferedStream<float>(40)
         let stream2 = BufferedStream<float>(40)
 
-        [
-            LiveChart.Radar stream1
-            LiveChart.Radar(stream2)
+
+        let b1 = Chart.Bar data
+        let b2 =
+            Chart.Bar(data)
                 .WithStrokeColor(Color.Name "red")
                 .WithFillColor(Color.Rgba(100, 160, 100, 0.1))
+
+        [
+            b1
+            b2
         ]
         |> Chart.Combine
         |> fun ch -> Renderers.ChartJs.Render(ch, Window = 10)
         |> insert
+
+        let rnd = System.Random()
+        async {
+            while true do
+                do! Async.Sleep 3000
+                let r = rnd.NextDouble() * 100.
+                b1.UpdateData(2, r)
+                b2.UpdateData(2, r / 2.)
+        }
+        |> Async.Start
 
 //
 //        let ds = Reactive.Select stream (fun e -> (string e, e))

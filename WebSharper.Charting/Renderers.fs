@@ -77,6 +77,12 @@ module Renderers =
 
                 let rendered = ChartJs.Chart(ctx).Line(data, options)
 
+                (chart :> IMutableChart<float, int>).OnUpdate <| fun (i, d) ->
+                    let ds : obj [] = rendered?datasets
+                    let s : obj [] = ds.[0]?points
+                    s.[i]?value <- d
+                    rendered.Update()
+
                 onEvent chart.DataSet window
                 <| fun _ _ -> rendered.RemoveData ()
                 <| fun _ (label, data) -> rendered.AddData([|data|], label)
@@ -103,6 +109,14 @@ module Renderers =
                         BarShowStroke = true)
 
                 let rendered = ChartJs.Chart(ctx).Bar(data, options)
+
+                JS.Global?rendered <- rendered
+
+                (chart :> IMutableChart<float, int>).OnUpdate <| fun (i, d) ->
+                    let ds : obj [] = rendered?datasets
+                    let s : obj [] = ds.[0]?bars
+                    s.[i]?value <- d
+                    rendered.Update()
 
                 onEvent chart.DataSet window
                 <| fun _ _ -> rendered.RemoveData ()
@@ -135,6 +149,12 @@ module Renderers =
                         DatasetStroke = true)
 
                 let rendered = ChartJs.Chart(ctx).Radar(data, options)
+
+                (chart :> IMutableChart<float, int>).OnUpdate <| fun (i, d) ->
+                    let ds : obj [] = rendered?datasets
+                    let s : obj [] = ds.[0]?points
+                    s.[i]?value <- d
+                    rendered.Update()
 
                 onEvent chart.DataSet window
                 <| fun _ _ -> rendered.RemoveData ()
@@ -178,6 +198,11 @@ module Renderers =
                     | PolarChartType.Doughnut opts ->
                         let d = As<ChartJs.DoughnutChartDataset []> data 
                         ChartJs.Chart(ctx).Doughnut(d, opts) :> _
+
+                (chart :> IMutableChart<float, int>).OnUpdate <| fun (i, d) ->
+                    let s : obj [] = rendered?segments
+                    s.[i]?value <- d
+                    rendered.Update()
 
                 onEvent chart.DataSet window
                 <| fun _ _ -> rendered.RemoveData 0
@@ -248,6 +273,15 @@ module Renderers =
                 let rendered = 
                     ChartJs.Chart(ctx).Line(data, options)
 
+                chart.Charts
+                |> Seq.iteri (fun i chart ->
+                    (chart :> IMutableChart<float, int>).OnUpdate <| fun (j, d) ->
+                        let ds : obj [] = rendered?datasets
+                        let s : obj [] = ds.[i]?points
+                        s.[j]?value <- d
+                        rendered.Update()
+                )
+
                 let streams =
                     chart.Charts
                     |> Seq.map (fun chart -> chart.DataSet)
@@ -294,6 +328,15 @@ module Renderers =
 
                 let rendered = 
                     ChartJs.Chart(ctx).Bar(data, options)
+
+                chart.Charts
+                |> Seq.iteri (fun i chart ->
+                    (chart :> IMutableChart<float, int>).OnUpdate <| fun (j, d) ->
+                        let ds : obj [] = rendered?datasets
+                        let s : obj [] = ds.[i]?bars
+                        s.[j]?value <- d
+                        rendered.Update() // TODO optimize calling this
+                )
 
                 let streams =
                     chart.Charts
@@ -347,6 +390,15 @@ module Renderers =
 
                 let rendered = 
                     ChartJs.Chart(ctx).Radar(data, options)
+
+                chart.Charts
+                |> Seq.iteri (fun i chart ->
+                    (chart :> IMutableChart<float, int>).OnUpdate <| fun (j, d) ->
+                        let ds : obj [] = rendered?datasets
+                        let s : obj [] = ds.[i]?points
+                        s.[j]?value <- d
+                        rendered.Update()
+                )
 
                 let streams =
                     chart.Charts

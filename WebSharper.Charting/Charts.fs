@@ -89,8 +89,26 @@ module Charts =
         abstract member WithFillColor : Color -> 'Self
         abstract member WithStrokeColor : Color -> 'Self
 
+    [<Interface>]
+    type IMutableChart<'T, 'U> =
+        abstract member UpdateData : props : 'U * data :'T -> unit
+        abstract member OnUpdate : ('U * 'T -> unit) -> unit
+
     type LineChart internal (dataset : DataType<string * float>, cfg : ChartConfig,
                              scfg : SeriesChartConfig, ccfg : ColorConfig) = 
+        
+        let event = Event<int * float>()
+
+        interface IMutableChart<float, int> with
+            override x.UpdateData(data, props) =
+                event.Trigger((data, props))
+
+            override x.OnUpdate(fn) =
+                event.Publish.Add fn
+
+        [<Name "__UpdateData">]
+        member x.UpdateData(data, props) = (x :> IMutableChart<float, int>).UpdateData(data, props)
+
         member x.DataSet = dataset
 
         interface IChart<LineChart> with
@@ -160,6 +178,18 @@ module Charts =
     type BarChart internal (dataset : DataType<string * float>, cfg : ChartConfig, scfg : SeriesChartConfig) = 
         let cst x = (x :> ISeriesChart<BarChart>)
 
+        let event = Event<int * float>()
+
+        interface IMutableChart<float, int> with
+            override x.UpdateData(data, props) =
+                event.Trigger((data, props))
+
+            override x.OnUpdate(fn) =
+                event.Publish.Add fn
+
+        [<Name "__UpdateData">]
+        member x.UpdateData(data, props) = (x :> IMutableChart<float, int>).UpdateData(data, props)
+
         member x.DataSet = dataset
 
         interface ISeriesChart<BarChart> with
@@ -195,6 +225,18 @@ module Charts =
 
     type RadarChart internal (dataset : DataType<string * float>, cfg : ChartConfig,
                               scfg : SeriesChartConfig, ccfg : ColorConfig) = 
+
+        let event = Event<int * float>()
+
+        interface IMutableChart<float, int> with
+            override x.UpdateData(data, props) =
+                event.Trigger((data, props))
+
+            override x.OnUpdate(fn) =
+                event.Publish.Add fn
+
+        [<Name "__UpdateData">]
+        member x.UpdateData(data, props) = (x :> IMutableChart<float, int>).UpdateData(data, props)
 
         member x.DataSet = dataset
 
@@ -265,12 +307,25 @@ module Charts =
     // TODO most of the config doesn't make sense here
     [<Interface>]
     type IPolarAreaChart<'Self when 'Self :> IPolarAreaChart<'Self>> =
+        inherit IMutableChart<float, int>
         inherit IChart<'Self>
         
         abstract member DataSet : DataType<PolarData>
 
     type PolarAreaChart internal (dataset : DataType<PolarData>, cfg : ChartConfig) =
         let cst x = (x :> IPolarAreaChart<PolarAreaChart>)
+
+        let event = Event<int * float>()
+
+        interface IMutableChart<float, int> with
+            override x.UpdateData(props, data) =
+                event.Trigger((props, data))
+
+            override x.OnUpdate(fn) =
+                event.Publish.Add fn
+
+        [<Name "__UpdateData">]
+        member x.UpdateData(props, data) = (x :> IMutableChart<float, int>).UpdateData(props, data)
 
         interface IPolarAreaChart<PolarAreaChart> with
             override x.Config = cfg
@@ -290,6 +345,18 @@ module Charts =
     type PieChart internal (dataset : DataType<PolarData>, cfg : ChartConfig) =
         let cst x = (x :> IPolarAreaChart<PieChart>)
 
+        let event = Event<int * float>()
+
+        interface IMutableChart<float, int> with
+            override x.UpdateData(data, props) =
+                event.Trigger((data, props))
+
+            override x.OnUpdate(fn) =
+                event.Publish.Add fn
+
+        [<Name "__UpdateData">]
+        member x.UpdateData(props, data) = (x :> IMutableChart<float, int>).UpdateData(props, data)
+
         interface IPolarAreaChart<PieChart> with
             override x.Config = cfg
             override x.DataSet = dataset
@@ -307,6 +374,18 @@ module Charts =
 
     type DoughnutChart internal (dataset : DataType<PolarData>, cfg : ChartConfig) =
         let cst x = (x :> IPolarAreaChart<DoughnutChart>)
+
+        let event = Event<int * float>()
+
+        interface IMutableChart<float, int> with
+            override x.UpdateData(data, props) =
+                event.Trigger((data, props))
+
+            override x.OnUpdate(fn) =
+                event.Publish.Add fn
+
+        [<Name "__UpdateData">]
+        member x.UpdateData(props, data) = (x :> IMutableChart<float, int>).UpdateData(props, data)
 
         interface IPolarAreaChart<DoughnutChart> with
             override x.Config = cfg
