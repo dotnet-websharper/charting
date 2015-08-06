@@ -32,6 +32,10 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OtherFlags>
+    </OtherFlags>
+  </PropertyGroup>
   <!-- F# targets -->
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '11.0'">
@@ -48,9 +52,13 @@
   <Import Project="../build/net45/$(Name).proj" />
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Compile Include="Pervasives.fsi" />
     <Compile Include="Pervasives.fs" />
+    <Compile Include="BufferedStream.fsi" />
     <Compile Include="BufferedStream.fs" />
+    <Compile Include="Charts.fsi" />
     <Compile Include="Charts.fs" />
+    <Compile Include="Renderers.fsi" />
     <Compile Include="Renderers.fs" />
     <None Include="app.config" />
     <None Include="packages.config" />
