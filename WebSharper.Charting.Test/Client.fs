@@ -13,7 +13,6 @@ module Client =
         el.AppendTo "entry"
 
     let Main =
-
         let data = [ for x in 1.0 .. 9.0 -> (string x, x ** 2.0) ]
 
         let chart = Chart.PolarArea(data)
