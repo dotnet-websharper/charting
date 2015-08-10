@@ -2,11 +2,9 @@ namespace WebSharper.Charting
 
 [<AutoOpen>]
 module Pervasives = begin
-    
     type Size = | Size of width: int * height: int
     
-    /// Represents color values in 3 different notation.
-    [<RequireQualifiedAccessAttribute ()>]
+    [<RequireQualifiedAccessAttribute>]
     type Color =
         | Rgba of red: int * green: int * blue: int * alpha: float
         | Hex  of string

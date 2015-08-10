@@ -2,7 +2,7 @@
 
 module Charts = begin
     
-    /// Represents a segment in a polar-based chart (e.g. pie chart).
+    /// <summary>A segment in a polar-area chart (pie chart, doughnut chart).</summary>
     type PolarData =
         {
             Value     : float
@@ -11,19 +11,27 @@ module Charts = begin
             Label     : string
         }
     
+    /// <summary>The type of data to show in a chart.</summary>
     type DataType<'T> =
+        /// <summary>Static data to which you cannot add points later.</summary>
         | Static of seq<'T>
+        /// <summary>Live data which can be updated with new elements in real-time.</summary>
         | Live of System.IObservable<'T>
 
     module DataType = begin
+        /// <summary>Builds a new colelction whose elements are the results of appying the given
+        /// functions to each element of the collection. Preserves the type of the source.</summary>
         val Map : fn:('a -> 'b) -> dt:DataType<'a> -> DataType<'b>
     end
 
+
+    /// <summary>Configuration of a generic chart.</summary>
     type ChartConfig =
         {
             Title: string
         }
 
+    /// <summary>Configuration of a series chart.</summary>
     type SeriesChartConfig =
         {
             XAxis: string
@@ -32,6 +40,7 @@ module Charts = begin
             StrokeColor: Pervasives.Color
         }
 
+    /// <summary>Color configuration of a chart.</summary>
     type ColorConfig =
         {
             PointColor: Pervasives.Color
@@ -40,12 +49,15 @@ module Charts = begin
             PointStrokeColor: Pervasives.Color
         }
 
+    /// <summary>Base type of all charts.</summary>
+    /// <typeparam name="Self">The own type of the implementing class.</typeparam>
     type IChart<'Self when 'Self :> IChart<'Self>> =
         interface
             abstract member WithTitle : string -> 'Self
             abstract member Config : ChartConfig
         end
 
+    /// <summary>Chart that can be colored with ColorConfig.</summary>
     type IColorChart<'Self when 'Self :> IColorChart<'Self>> =
         interface
             inherit IChart<'Self>
@@ -68,8 +80,13 @@ module Charts = begin
             abstract member SeriesConfig : SeriesChartConfig
         end
 
+    /// <summary>Chart containing mutable data.</summary>
     type IMutableChart<'T, 'U> =
+        /// <summary>Updates chart data at the given position.</summary>
+        /// <param name="props">Extra properties needed for updating (such as index).</param>
+        /// <param name="data">The data to insert at the given position.</param>
         abstract member UpdateData : props : 'U * data :'T -> unit
+        /// <summary>Adds a listener to the chart that gets called on data updates.</summary>
         abstract member OnUpdate : ('U * 'T -> unit) -> unit
 
     type LineChart =
@@ -79,6 +96,9 @@ module Charts = begin
             interface IChart<LineChart>
             interface IMutableChart<float, int>
         
+            /// <summary>Updates chart data at the given position.</summary>
+            /// <param name="props">Extra properties needed for updating (such as index).</param>
+            /// <param name="data">The data to insert at the given position.</param>
             member UpdateData : props : int * data : float -> unit
             member WithFillColor : color:Pervasives.Color -> LineChart
             member WithPointColor : color:Pervasives.Color -> LineChart
@@ -100,6 +120,9 @@ module Charts = begin
             interface ISeriesChart<BarChart>
             interface IMutableChart<float, int>
 
+            /// <summary>Updates chart data at the given position.</summary>
+            /// <param name="props">Extra properties needed for updating (such as index).</param>
+            /// <param name="data">The data to insert at the given position.</param>
             member UpdateData : props : int * data : float -> unit
             member WithFillColor : color:Pervasives.Color -> BarChart
             member WithStrokeColor : color:Pervasives.Color -> BarChart
@@ -118,6 +141,9 @@ module Charts = begin
             interface IChart<RadarChart>
             interface IMutableChart<float, int>
         
+            /// <summary>Updates chart data at the given position.</summary>
+            /// <param name="props">Extra properties needed for updating (such as index).</param>
+            /// <param name="data">The data to insert at the given position.</param>
             member UpdateData : props : int * data : float -> unit
             member WithFillColor : color:Pervasives.Color -> RadarChart
             member WithPointColor : color:Pervasives.Color -> RadarChart
@@ -147,6 +173,9 @@ module Charts = begin
            interface IPolarAreaChart<PolarAreaChart>
            interface IMutableChart<float, int>
         
+            /// <summary>Updates chart data at the given position.</summary>
+            /// <param name="props">Extra properties needed for updating (such as index).</param>
+            /// <param name="data">The data to insert at the given position.</param>
             member UpdateData : props : int * data : float -> unit
             member WithTitle : title:string -> PolarAreaChart
             member Config : ChartConfig
@@ -157,7 +186,10 @@ module Charts = begin
         class
             interface IPolarAreaChart<PieChart>
             interface IMutableChart<float, int>
-        
+
+            /// <summary>Updates chart data at the given position.</summary>
+            /// <param name="props">Extra properties needed for updating (such as index).</param>
+            /// <param name="data">The data to insert at the given position.</param>
             member UpdateData : props : int * data : float -> unit
             member WithTitle : title:string -> PieChart
             member Config : ChartConfig
@@ -168,7 +200,10 @@ module Charts = begin
         class
             interface IPolarAreaChart<DoughnutChart>
             interface IMutableChart<float, int>
-        
+
+            /// <summary>Updates chart data at the given position.</summary>
+            /// <param name="props">Extra properties needed for updating (such as index).</param>
+            /// <param name="data">The data to insert at the given position.</param>
             member UpdateData : props : int * data : float -> unit
             member WithTitle : title:string -> DoughnutChart
             member Config : ChartConfig
@@ -181,96 +216,77 @@ module Charts = begin
         end
 end
 
-/// Shorthand functions for creating static
 type Chart =
     class
-        /// Creates a new bar chart from a sequence of
-        /// string and floating-point number pairs.
+        /// <summary>Creates a new bar chart from label and value pairs.</summary>
         static member Bar : dataset:seq<string * float> -> Charts.BarChart
-            
-        /// Combines the given charts into one.
-        static member Combine : charts:seq<'a> -> Charts.CompositeChart<'a> when 'a :> Charts.IChart<'a>
 
-        /// Creates a new doughnut chart (special pie chart) from a
-        /// sequence of polar data.
+        /// <summary>Combines the given series charts into one. You can combine live charts with static ones.</summary>
+        static member Combine : charts:seq<'a> -> Charts.CompositeChart<'a> when 'a :> Charts.ISeriesChart<'a>
+
+        /// <summary>Creates a new doughnut chart from a sequence of polar data.</summary>
         static member Doughnut : dataset:seq<Charts.PolarData> -> Charts.DoughnutChart
 
-        /// Creates a new doughnut chart from a sequence of
-        /// string and floating-point number pairs.
+        /// <summary>Creates a new doughnut chart from label and value pairs.</summary>
         static member Doughnut : dataset:seq<string * float> -> Charts.DoughnutChart
 
-        /// Creates a new line chart from a sequence of
-        /// string and floating-point number pairs.
+        /// <summary>Creates a new line chart from label and value pairs.</summary>
         static member Line : dataset:seq<string * float> -> Charts.LineChart
-        
-        /// Creates a new pie chart from a
-        /// sequence of polar data.
+
+        /// <summary>Creates a new pie chart from a sequence of polar data.</summary>
         static member Pie : dataset:seq<Charts.PolarData> -> Charts.PieChart
-            
-        /// Creates a new pie chart from a sequence of
-        /// string and floating-point number pairs.
+
+        /// <summary>Creates a new pie chart from label and value pairs.</summary>
         static member Pie : dataset:seq<string * float> -> Charts.PieChart
-            
-        /// Creates a new polar-area chart from a
-        /// sequence of polar data.
+
+        /// <summary>Creates a new polar-area chart from a sequence of polar data.</summary>
         static member PolarArea : dataset:seq<Charts.PolarData> -> Charts.PolarAreaChart
 
-        /// Creates a new polar-area chart from a sequence of
-        /// string and floating-point number pairs.
+        /// <summary>Creates a new polar-area chart from label and value pairs.</summary>
         static member PolarArea : dataset:seq<string * float> -> Charts.PolarAreaChart
           
-        /// Creates a new radar chart from a sequence of
-        /// string and floating-point number pairs.
+        /// <summary>Creates a new radar chart from label and value pairs.</summary>
         static member Radar : dataset:seq<string * float> -> Charts.RadarChart
     end
 
 type LiveChart =
     class
-        /// Creates a new bar chart from a continuous flow of
-        /// string and floating-point number pairs.
+        /// <summary>Creates a new bar chart from stream of label and value pairs.</summary>
         static member Bar : dataset:System.IObservable<string * float> -> Charts.BarChart
             
-        /// Creates a new bar chart from a continuous flow of
-        /// floating-point numbers.
+        /// <summary>Creates a new bar chart from a stream of values.</summary>
+        /// <remakrs>The labels will be an auto-generated series from the index of the element.</remakrs>
         static member Bar : dataset:System.IObservable<float> ->Charts.BarChart
 
-        /// Creates a new doughnut chart from a continuous flow of
-        /// polar data.
+        /// <summary>Creates a new doughnut chart from a stream of polar data.</summary>
         static member Doughnut : dataset:System.IObservable<Charts.PolarData> -> Charts.DoughnutChart
             
-        /// Creates a new doughnut chart from a continuous flow of
-        /// string and floating-point number pairs.
+        /// <summary>Creates a new doughnut chart from a stream of label and value pairs.</summary>
         static member Doughnut : dataset:System.IObservable<string * float> -> Charts.DoughnutChart
             
-        /// Creates a new line chart from a continuous flow of
-        /// string and floating-point number pairs.
+        /// <summary>Creates a new line chart from a stream of label and value pairs.</summary>
         static member Line : dataset:System.IObservable<string * float> -> Charts.LineChart
 
-        /// Creates a new line chart from a continuous flow of
-        /// floating-point numbers.
+        /// <summary>Creates a new line chart from a stream of values.</summary>
+        /// <remakrs>The labels will be an auto-generated series from the index of the element.</remakrs>
         static member Line : dataset:System.IObservable<float> -> Charts.LineChart
 
-        /// Creates a new pie chart from a continuous flow of
-        /// polar data.
+        /// <summary>Creates a new pie chart from a stream of polar data.</summary>
         static member Pie : dataset:System.IObservable<Charts.PolarData> -> Charts.PieChart
             
-        /// Creates a new pie chart from a continuous flow of
-        /// string and floating-point number pairs.
+        /// <summary>Creates a new pie chart from a stream of label and value pairs.</summary>
         static member Pie : dataset:System.IObservable<string * float> -> Charts.PieChart
             
-        /// Creates a new polar-area chart from a continuous flow of
-        /// polar data.
+        /// <summary>Creates a new polar-area chart from a stream of polar data.</summary>
         static member PolarArea : dataset:System.IObservable<Charts.PolarData> -> Charts.PolarAreaChart
             
-        /// Creates a new polar-area chart from a continuous flow of
-        /// string and floating-point number pairs.
+        /// <summary>Creates a new polar-area chart from a stream of label and value pairs.</summary>
         static member PolarArea : dataset:System.IObservable<string * float> -> Charts.PolarAreaChart
             
-        /// Creates a new radar chart from a continuous flow of
-        /// string and floating-point number pairs.
+        /// <summary>Creates a new radar chart from a stream of label and value pairs.</summary>
         static member Radar : dataset:System.IObservable<string * float> -> Charts.RadarChart
             
-        /// Creates a new radar chart from a continuous flow of
-        /// floating-point numbers.
+        /// <summary>Creates a new radar chart from a stream of values.</summary>
+        /// <remakrs>The labels will be an auto-generated series from the index of the element.</remakrs>
         static member Radar : dataset:System.IObservable<float> -> Charts.RadarChart
     end

@@ -11,7 +11,6 @@ module Charts =
         | Live of IObservable<'T>
 
     module DataType =
-
         let Map fn dt =
             match dt with
             | Static s -> Static <| Seq.map fn s

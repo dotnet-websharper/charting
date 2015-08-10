@@ -50,13 +50,13 @@ module Client =
 //
         // live charts
 
-        let stream1 = BufferedStream<float>(40)
-        let stream2 = BufferedStream<float>(40)
+        let stream1 = Event<float>()
+        let stream2 = Event<float>()
 
 
-        let b1 = LiveChart.Radar stream1
+        let b1 = LiveChart.Radar stream1.Publish
         let b2 =
-            LiveChart.Radar(stream2)
+            LiveChart.Radar(stream2.Publish)
                 .WithStrokeColor(Color.Name "red")
                 .WithFillColor(Color.Rgba(100, 160, 100, 0.1))
 
@@ -68,23 +68,23 @@ module Client =
         |> fun ch -> Renderers.ChartJs.Render(ch, Window = 10)
         |> insert
 
-//        let rnd = System.Random()
-//        async {
-//            while true do
-//                do! Async.Sleep 300
-//                let r = rnd.NextDouble() * 100.
-//                try
-//                    b1.UpdateData(2, r)
-//                    b2.UpdateData(2, r / 2.)
-//                with _ ->
-//                    ()
-//        }
-//        |> Async.Start
+        let rnd = System.Random()
+        async {
+            while true do
+                do! Async.Sleep 300
+                let r = rnd.NextDouble() * 100.
+                try
+                    b1.UpdateData(2, r)
+                    b2.UpdateData(2, r / 2.)
+                with _ ->
+                    ()
+        }
+        |> Async.Start
 
         let RadarChart =
             let labels =
                 [| "Eating"; "Drinking"; "Sleeping";
-                   "Designing"; "Coding"; "Cycling"; "Running" |]
+                    "Designing"; "Coding"; "Cycling"; "Running" |]
             let dataset1 = [|28.0; 48.0; 40.0; 19.0; 96.0; 27.0; 100.0|]
             let dataset2 = [|65.0; 59.0; 90.0; 81.0; 56.0; 55.0; 40.0|]
 
@@ -136,8 +136,8 @@ module Client =
             }
             |> Async.Start
 
-        generate stream1.Event 300. 1000 1250
-        generate stream2.Event 100. 1000 1050
+        generate stream1 300. 1000 1250
+        generate stream2 100. 1000 1050
 
 
         

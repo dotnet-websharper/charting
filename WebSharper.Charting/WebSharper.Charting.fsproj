@@ -8,6 +8,7 @@
     <WebSharperProject>Library</WebSharperProject>
     <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
     <NuGetPackageImportStamp>db2a2658</NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
@@ -29,12 +30,13 @@
     <Name>WebSharper.Charting</Name>
     <RootNamespace>WebSharper.Charting</RootNamespace>
     <AssemblyName>WebSharper.Charting</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OtherFlags>
     </OtherFlags>
+    <DocumentationFile>bin/Debug\WebSharper.Charting.xml</DocumentationFile>
   </PropertyGroup>
   <!-- F# targets -->
   <Choose>
@@ -54,8 +56,6 @@
   <ItemGroup>
     <Compile Include="Pervasives.fsi" />
     <Compile Include="Pervasives.fs" />
-    <Compile Include="BufferedStream.fsi" />
-    <Compile Include="BufferedStream.fs" />
     <Compile Include="Charts.fsi" />
     <Compile Include="Charts.fs" />
     <Compile Include="Renderers.fsi" />
