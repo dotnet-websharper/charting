@@ -199,7 +199,7 @@ uniform random data.
 
 ## Rendering
 The default renderers can be accessed from the `WebSharper.Charting.Renderers.ChartJs`
-namespace. As you can see in the [Usage](#Usage) section there are some arguments
+namespace. As you can see in the [Usage](#usage) section there are some arguments
 you can pass here to the renderer. `Size` defines how large the rendering canvas should be,
 `Window` specifies how many data points can be at max on the chart (especially useful
 with live charts) and there's a `Config` parameter which depends on what kind of
