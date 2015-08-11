@@ -111,7 +111,7 @@ module Renderers =
                 <| fun (i, d) ->
                     let ds : obj [] = rendered?datasets
                     let s : obj [] = ds.[0]?points
-                    s.[i]?value <- d
+                    s.[i]?value <- d s.[i]?value
                 <| rendered.Update
 
                 onEvent chart.DataSet window
@@ -145,7 +145,7 @@ module Renderers =
                 <| fun (i, d) ->
                     let ds : obj [] = rendered?datasets
                     let s : obj [] = ds.[0]?bars
-                    s.[i]?value <- d
+                    s.[i]?value <- d s.[i]?value
                 <| rendered.Update
 
                 onEvent chart.DataSet window
@@ -184,7 +184,7 @@ module Renderers =
                 <| fun (i, d) ->
                     let ds : obj [] = rendered?datasets
                     let s : obj [] = ds.[0]?points
-                    s.[i]?value <- d
+                    s.[i]?value <- d s.[i]?value
                 <| rendered.Update
 
                 onEvent chart.DataSet window
@@ -232,7 +232,7 @@ module Renderers =
 
                 (chart :> IMutableChart<float, int>).OnUpdate <| fun (i, d) ->
                     let s : obj [] = rendered?segments
-                    s.[i]?value <- d
+                    s.[i]?value <- d s.[i]?value
                     rendered.Update()
 
                 onEvent chart.DataSet window
@@ -310,7 +310,7 @@ module Renderers =
                     <| fun (j, d) ->
                         let ds : obj [] = rendered?datasets
                         let s : obj [] = ds.[i]?points
-                        s.[j]?value <- d
+                        s.[j]?value <- d s.[j]?value
                     <| rendered.Update
                 )
 
@@ -367,7 +367,7 @@ module Renderers =
                     <| fun (j, d) ->
                         let ds : obj [] = rendered?datasets
                         let s : obj [] = ds.[i]?bars
-                        s.[j]?value <- d
+                        s.[j]?value <- d s.[j]?value
                     <| rendered.Update
                 )
 
@@ -430,7 +430,7 @@ module Renderers =
                     <| fun (j, d) ->
                         let ds : obj [] = rendered?datasets
                         let s : obj [] = ds.[i]?points
-                        s.[j]?value <- d
+                        s.[j]?value <- d s.[j]?value
                     <| rendered.Update
                 )
 

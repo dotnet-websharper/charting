@@ -6,6 +6,14 @@ open WebSharper.Html.Client
 open WebSharper.Charting
 open IntelliFactory.Reactive
 
+[<Interface>]
+type IChart<'Self when 'Self :> IChart<'Self>> =
+    abstract member WithTitle : string -> 'Self
+
+type EmptyChart(title : string) =
+    interface IChart<EmptyChart> with
+        override x.WithTitle t = EmptyChart(t)
+
 [<JavaScript>]
 module Client =
 
@@ -20,35 +28,23 @@ module Client =
         chart
         |> Renderers.ChartJs.Render
         |> insert
-//
-//        Chart.Pie(data)
-//        |> Renderers.ChartJs.Render
-//        |> insert
-//
-//        Chart.Doughnut(data)
-//        |> Renderers.ChartJs.Render
-//        |> insert
-//
-//        Chart.Radar(List.zip ["apples"; "oranges"; "strawberries"; "appricots"] [12.; 32.; 6.; 2.])
-//            .WithFillColor(Color.Name "red")
-//            .WithPointColor(Color.Name "black")
-//        |> fun c -> Renderers.ChartJs.Render(c, Size = Size(500, 500))
-//        |> insert
 
-//        [
-//            Chart.Line([ for x in 1.0 .. 9.0 -> (string x, x) ])
-//                .WithFillColor(Color.Rgba(32, 64, 128, 1.))
-//
-//            Chart.Line([ for x in 1.0 .. 10.0 -> (string x, x * x) ])
-//                .WithFillColor(Color.Rgba(128, 64, 32, 0.1))
-//        ]
-//        |> Chart.Combine
-//        |> fun e -> 
-//            let c = ChartJs.LineChartConfiguration(DatasetFill = true)
-//            Renderers.ChartJs.Render(e, Config = c)
-//        |> insert
-//
-        // live charts
+        let ch1 = 
+            Chart.Line([ for x in 1.0 .. 11.0 -> (string x, x) ])
+                .WithFillColor(Color.Rgba(32, 64, 128, 1.))
+
+        let ch2 =
+            Chart.Line([ for x in 1.0 .. 10.0 -> (string x, x * x) ])
+                .WithFillColor(Color.Rgba(128, 64, 32, 0.1))
+
+        [
+
+        ]
+        |> Chart.Combine
+        |> fun e -> 
+            let c = ChartJs.LineChartConfiguration(DatasetFill = true)
+            Renderers.ChartJs.Render(e, Config = c)
+        |> insert
 
         let stream1 = Event<float>()
         let stream2 = Event<float>()
@@ -74,57 +70,14 @@ module Client =
                 do! Async.Sleep 300
                 let r = rnd.NextDouble() * 100.
                 try
-                    b1.UpdateData(2, r)
-                    b2.UpdateData(2, r / 2.)
+                    b1.UpdateData(2, fun _ -> r)
+                    b2.UpdateData(2, fun _ -> r / 2.)
                 with _ ->
                     ()
         }
         |> Async.Start
 
-        let RadarChart =
-            let labels =
-                [| "Eating"; "Drinking"; "Sleeping";
-                    "Designing"; "Coding"; "Cycling"; "Running" |]
-            let dataset1 = [|28.0; 48.0; 40.0; 19.0; 96.0; 27.0; 100.0|]
-            let dataset2 = [|65.0; 59.0; 90.0; 81.0; 56.0; 55.0; 40.0|]
 
-            Chart.Combine [
-                Chart.Radar(Array.zip labels dataset1)
-                    .WithFillColor(Color.Rgba(151, 187, 205, 0.2))
-                    .WithStrokeColor(Color.Name "blue")
-                    .WithPointColor(Color.Name "darkblue")
-
-                Chart.Radar(Array.zip labels dataset2)
-                    .WithFillColor(Color.Rgba(220, 220, 220, 0.2))
-                    .WithStrokeColor(Color.Name "green")
-                    .WithPointColor(Color.Name "darkgreen")
-            ]
-            |> fun ch -> Renderers.ChartJs.Render(ch, Size = Size(1000, 600))
-            
-        RadarChart.AppendTo "entry"
-
-//
-//        let ds = Reactive.Select stream (fun e -> (string e, e))
-//        
-//        LiveChart.Pie(ds)
-//        |> fun c -> Renderers.ChartJs.Render(c, Window = 10)
-//        |> insert
-
-//
-//        stream
-//        |> LiveChart.Line
-//        |> fun chrt -> Renderers.ChartJs.Render(chrt, Window = 10)
-//        |> insert
-//
-//        Reactive.Select
-//        <| Reactive.Aggregate stream (0, 0.0) (fun (s, e) c -> 
-//            let fs = float s
-//            (s + 1, (e * fs + c) / (fs + 1.)))
-//        <| fun (a, b) -> (string a, b)
-//        |> LiveChart.Line
-//        |> Renderers.ChartJs.Render
-//        |> insert
-//
         let generate (s : Event<float>) range miniv maxiv =
             let rand = System.Random()
             async {
@@ -139,6 +92,19 @@ module Client =
         generate stream1 300. 1000 1250
         generate stream2 100. 1000 1050
 
-
+        let months = [|"January"; "February"; "March"; "April"; "May"; "June";
+                       "July"; "August"; "September"; "October"; "November"; "December"|]
+        let data = Array.zip months [| for _ in 1 .. 12 -> 0.0 |] 
+        let chart = Chart.Bar data
+        Renderers.ChartJs.Render(chart, Size = Size(500, 350))
+            .AppendTo "entry" // where "main" is the id of some element in the DOM
         
-
+        let rnd = System.Random()
+        async {
+            while true do
+                do! Async.Sleep 300
+                let i = rnd.Next(0,12)
+                let a = rnd.NextDouble() * 10.
+                chart.UpdateData(i, fun e -> e + a)
+        }
+        |> Async.Start

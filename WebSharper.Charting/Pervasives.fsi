@@ -21,4 +21,5 @@ module Pervasives = begin
     end
 
     val internal streamWithLabel : System.IObservable<float> -> System.IObservable<string * float>
+    val internal withIndex : seq<'T> -> seq<string * 'T>
 end

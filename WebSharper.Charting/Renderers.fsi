@@ -2,42 +2,72 @@
 
 open WebSharper
 
-/// Available rendering methods.
 module Renderers = begin
     
-    /// Functions for rendering the internal chart-type with Chart.js.
+    /// <summary>Functions for rendering charts with Chart.js.</summary>
     type ChartJs =
         class
-            /// Renders a LineChart instance with the given options using Chart.js.
-            /// For the configuration options, please refer to the Chart.js website.
+            /// <summary>Renders a LineChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Size">The Size of the canvas.</parameter>
+            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
             static member Render : chart:Charts.LineChart * ?Size:Pervasives.Size * ?Config:ChartJs.LineChartConfiguration * ?Window:int -> Html.Client.Element
 
-            /// Renders a BarChart instance with the given options using Chart.js.
-            /// For the configuration options, please refer to the Chart.js website.
+            /// <summary>Renders a BarChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Size">The Size of the canvas.</parameter>
+            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
             static member Render : chart:Charts.BarChart * ?Size:Pervasives.Size * ?Config:ChartJs.BarChartConfiguration * ?Window:int -> Html.Client.Element
             
-            /// Renders a RadarChart instance with the given options using Chart.js.
-            /// For the configuration options, please refer to the Chart.js website.
+            /// <summary>Renders a RadarChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Size">The Size of the canvas.</parameter>
+            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
             static member Render : chart:Charts.RadarChart * ?Size:Pervasives.Size * ?Config:ChartJs.RadarChartConfiguration * ?Window:int -> Html.Client.Element
             
-            /// Renders a PieChart instance with the given options using Chart.js.
-            /// For the configuration options, please refer to the Chart.js website.
+            /// <summary>Renders a PieChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Size">The Size of the canvas.</parameter>
+            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
             static member Render : chart:Charts.PieChart * ?Size:Pervasives.Size * ?Config:ChartJs.PieChartConfiguration * ?Window:int -> Html.Client.Element
             
-            /// Renders a DoughnutChart instance with the given options using Chart.js.
-            /// For the configuration options, please refer to the Chart.js website.
+            /// <summary>Renders a DoughnutChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Size">The Size of the canvas.</parameter>
+            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
             static member Render : chart:Charts.DoughnutChart * ?Size:Pervasives.Size * ?Config:ChartJs.DoughnutChartConfiguration * ?Window:int -> Html.Client.Element
             
-            /// Renders a PolarAreaChart instance with the given options using Chart.js.
-            /// For the configuration options, please refer to the Chart.js website.
+            /// <summary>Renders a PolarAreaChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Size">The Size of the canvas.</parameter>
+            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
             static member Render : chart:Charts.PolarAreaChart * ?Size:Pervasives.Size * ?Config:ChartJs.PolarAreaChartConfiguration * ?Window:int -> Html.Client.Element
             
-            /// Renders a combined line-chart with the given options using Chart.js.
-            /// For the configuration options, please refer to the Chart.js website.
+            /// <summary>Renders a combined LineChart.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Size">The Size of the canvas.</parameter>
+            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
             static member Render : chart:Charts.CompositeChart<Charts.LineChart> * ?Size:Pervasives.Size * ?Config:ChartJs.LineChartConfiguration * ?Window:int -> Html.Client.Element
 
+            /// <summary>Renders a combined BarChart.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Size">The Size of the canvas.</parameter>
+            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
             static member Render : chart:Charts.CompositeChart<Charts.BarChart> * ?Size:Pervasives.Size * ?Config:ChartJs.BarChartConfiguration * ?Window:int -> Html.Client.Element
 
+            /// <summary>Renders a combined RadarChart.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Size">The Size of the canvas.</parameter>
+            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
             static member Render : chart:Charts.CompositeChart<Charts.RadarChart> * ?Size:Pervasives.Size * ?Config:ChartJs.RadarChartConfiguration * ?Window:int -> Html.Client.Element
         end
 end

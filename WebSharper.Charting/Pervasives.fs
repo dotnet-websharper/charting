@@ -25,6 +25,9 @@ module Pervasives =
         <| Reactive.Aggregate stream (0, 0.0) (fun (s, _) c -> (s + 1, c)) 
         <| fun (a, b) -> (string a, b)
 
+    let internal withIndex s =
+        Seq.zip (Seq.initInfinite <| fun i -> string i) s
+
     module internal Seq =
         let headOption s =
             if Seq.isEmpty s then None

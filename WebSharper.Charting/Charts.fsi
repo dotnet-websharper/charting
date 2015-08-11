@@ -84,10 +84,10 @@ module Charts = begin
     type IMutableChart<'T, 'U> =
         /// <summary>Updates chart data at the given position.</summary>
         /// <param name="props">Extra properties needed for updating (such as index).</param>
-        /// <param name="data">The data to insert at the given position.</param>
-        abstract member UpdateData : props : 'U * data :'T -> unit
+        /// <param name="update">The the function to update the data with. Receives the old value as parameter.</param>
+        abstract member UpdateData : props : 'U * update : ('T -> 'T) -> unit
         /// <summary>Adds a listener to the chart that gets called on data updates.</summary>
-        abstract member OnUpdate : ('U * 'T -> unit) -> unit
+        abstract member OnUpdate : ('U * ('T -> 'T) -> unit) -> unit
 
     type LineChart =
         class
@@ -98,8 +98,8 @@ module Charts = begin
         
             /// <summary>Updates chart data at the given position.</summary>
             /// <param name="props">Extra properties needed for updating (such as index).</param>
-            /// <param name="data">The data to insert at the given position.</param>
-            member UpdateData : props : int * data : float -> unit
+            /// <param name="update">The the function to update the data with. Receives the old value as parameter.</param>
+            member UpdateData : props : int * update : (float -> float) -> unit
             member WithFillColor : color:Pervasives.Color -> LineChart
             member WithPointColor : color:Pervasives.Color -> LineChart
             member WithPointHighlightFill : color:Pervasives.Color -> LineChart
@@ -122,8 +122,8 @@ module Charts = begin
 
             /// <summary>Updates chart data at the given position.</summary>
             /// <param name="props">Extra properties needed for updating (such as index).</param>
-            /// <param name="data">The data to insert at the given position.</param>
-            member UpdateData : props : int * data : float -> unit
+            /// <param name="update">The the function to update the data with. Receives the old value as parameter.</param>
+            member UpdateData : props : int * update : (float -> float) -> unit
             member WithFillColor : color:Pervasives.Color -> BarChart
             member WithStrokeColor : color:Pervasives.Color -> BarChart
             member WithTitle : title:string -> BarChart
@@ -143,8 +143,8 @@ module Charts = begin
         
             /// <summary>Updates chart data at the given position.</summary>
             /// <param name="props">Extra properties needed for updating (such as index).</param>
-            /// <param name="data">The data to insert at the given position.</param>
-            member UpdateData : props : int * data : float -> unit
+            /// <param name="update">The the function to update the data with. Receives the old value as parameter.</param>
+            member UpdateData : props : int * update : (float -> float) -> unit
             member WithFillColor : color:Pervasives.Color -> RadarChart
             member WithPointColor : color:Pervasives.Color -> RadarChart
             member WithPointHighlightFill : color:Pervasives.Color -> RadarChart
@@ -175,8 +175,8 @@ module Charts = begin
         
             /// <summary>Updates chart data at the given position.</summary>
             /// <param name="props">Extra properties needed for updating (such as index).</param>
-            /// <param name="data">The data to insert at the given position.</param>
-            member UpdateData : props : int * data : float -> unit
+            /// <param name="update">The the function to update the data with. Receives the old value as parameter.</param>
+            member UpdateData : props : int * update : (float -> float) -> unit
             member WithTitle : title:string -> PolarAreaChart
             member Config : ChartConfig
             member DataSet : DataType<PolarData>
@@ -189,8 +189,8 @@ module Charts = begin
 
             /// <summary>Updates chart data at the given position.</summary>
             /// <param name="props">Extra properties needed for updating (such as index).</param>
-            /// <param name="data">The data to insert at the given position.</param>
-            member UpdateData : props : int * data : float -> unit
+            /// <param name="update">The the function to update the data with. Receives the old value as parameter.</param>
+            member UpdateData : props : int * update : (float -> float) -> unit
             member WithTitle : title:string -> PieChart
             member Config : ChartConfig
             member DataSet : DataType<PolarData>
@@ -203,8 +203,8 @@ module Charts = begin
 
             /// <summary>Updates chart data at the given position.</summary>
             /// <param name="props">Extra properties needed for updating (such as index).</param>
-            /// <param name="data">The data to insert at the given position.</param>
-            member UpdateData : props : int * data : float -> unit
+            /// <param name="update">The the function to update the data with. Receives the old value as parameter.</param>
+            member UpdateData : props : int * update : (float -> float) -> unit
             member WithTitle : title:string -> DoughnutChart
             member Config : ChartConfig
             member DataSet : DataType<PolarData>
@@ -221,6 +221,9 @@ type Chart =
         /// <summary>Creates a new bar chart from label and value pairs.</summary>
         static member Bar : dataset:seq<string * float> -> Charts.BarChart
 
+        /// <summary>Creates a new bar chart from values.</summary>
+        static member Bar : dataset:seq<float> -> Charts.BarChart
+
         /// <summary>Combines the given series charts into one. You can combine live charts with static ones.</summary>
         static member Combine : charts:seq<'a> -> Charts.CompositeChart<'a> when 'a :> Charts.ISeriesChart<'a>
 
@@ -232,6 +235,9 @@ type Chart =
 
         /// <summary>Creates a new line chart from label and value pairs.</summary>
         static member Line : dataset:seq<string * float> -> Charts.LineChart
+
+        /// <summary>Creates a new line chart from values.</summary>
+        static member Line : dataset:seq<float> -> Charts.LineChart
 
         /// <summary>Creates a new pie chart from a sequence of polar data.</summary>
         static member Pie : dataset:seq<Charts.PolarData> -> Charts.PieChart
@@ -247,6 +253,9 @@ type Chart =
           
         /// <summary>Creates a new radar chart from label and value pairs.</summary>
         static member Radar : dataset:seq<string * float> -> Charts.RadarChart
+
+        /// <summary>Creates a new radar chart from values.</summary>
+        static member Radar : dataset:seq<float> -> Charts.RadarChart
     end
 
 type LiveChart =
