@@ -14,11 +14,11 @@ module Pervasives =
         | Name of string
 
         with
-         override x.ToString () =
-            match x with
-            | Rgba(r, g, b, a) -> sprintf "rgba(%d, %d, %d, %f)" r g b a
-            | Hex h -> h
-            | Name n -> n
+            override x.ToString () =
+                match x with
+                | Rgba(r, g, b, a) -> sprintf "rgba(%d, %d, %d, %f)" r g b a
+                | Hex h -> h
+                | Name n -> n
 
     let internal streamWithLabel stream =
         Reactive.Select

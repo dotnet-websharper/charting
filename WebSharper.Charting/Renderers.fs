@@ -6,7 +6,8 @@ open WebSharper
 [<JavaScript>]
 module Renderers =
     open WebSharper.JavaScript
-    open WebSharper.Html.Client
+    open WebSharper.UI.Next.Html
+    open WebSharper.UI.Next.Client
 
     open IntelliFactory.Reactive
 
@@ -52,10 +53,13 @@ module Renderers =
 
         let private withNewCanvas (size : Size) k =
             let (Size (width, height)) = size
-            Canvas [ Attr.Width <| string width; Attr.Height <| string height ]
-            |>! OnAfterRender (fun c ->
-                let ctx = (As<CanvasElement> c.Body).GetContext("2d")
-                k c ctx)
+            canvasAttr [ 
+                attr.width <| string width
+                attr.height <| string height
+                on.afterRender <| fun el ->
+                    let ctx = (As<CanvasElement> el).GetContext("2d")
+                    k el ctx
+            ] []
 
         let private mkInitial dataSet window =
             match dataSet with

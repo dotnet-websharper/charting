@@ -13,6 +13,7 @@ let main =
             [ 
                 r.NuGet("WebSharper.ChartJs").Reference() 
                 r.NuGet("IntelliFactory.Reactive").Reference() 
+                r.NuGet("WebSharper.UI.Next").Reference()
             ])
 
 let test =
@@ -21,6 +22,7 @@ let test =
             [ 
                 r.NuGet("WebSharper.ChartJs").Reference() 
                 r.NuGet("IntelliFactory.Reactive").Reference() 
+                r.NuGet("WebSharper.UI.Next").Reference()
                 r.Project main
             ])
 
