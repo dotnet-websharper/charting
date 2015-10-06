@@ -13,9 +13,9 @@ let main =
         .SourcesFromProject()
         .References(fun r ->
             [ 
-                r.NuGet("WebSharper.ChartJs").Reference() 
-                r.NuGet("IntelliFactory.Reactive").Reference() 
-                r.NuGet("WebSharper.UI.Next").Reference()
+                r.NuGet("WebSharper.ChartJs").ForceFoundVersion().Reference() 
+                r.NuGet("IntelliFactory.Reactive").ForceFoundVersion().Reference() 
+                r.NuGet("WebSharper.UI.Next").ForceFoundVersion().Reference()
             ])
 
 let test =
