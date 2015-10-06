@@ -5,6 +5,8 @@ open IntelliFactory.Build
 let bt =
     BuildTool().PackageId("WebSharper.Charting")
         .VersionFrom("WebSharper")
+        .WithFSharpVersion(FSharpVersion.FSharp30)
+        .WithFramework(fun fw -> fw.Net40)
 
 let main =
     bt.WebSharper.Library("WebSharper.Charting")
