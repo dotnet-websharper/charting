@@ -128,7 +128,8 @@ module Client =
             Renderers.ChartJs.Render(blueLine, Size = Size(300, 200))
             Renderers.ChartJs.Render(redLine, Size = Size(300, 200))
         ]
+        
         |> Doc.RunById "entry"
-
+            
         
         

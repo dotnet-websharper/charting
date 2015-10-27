@@ -58,7 +58,7 @@ on charts which implement the interface, and thus know what the color properties
 mean for them.
 
 ## Usage
-All the snippets assume the `WebSharper` and `WebSharper.Charting` namespaces are
+All the snippets assume the `WebSharper`, `WebSharper.Charting` and `WebSharper.UI.Next.Client` namespaces are
 open.
 
 ### Static charts
@@ -90,7 +90,7 @@ let chart =
     Chart.Radar(data)
         .WithFillColor(Color.Rgba(30, 30, 120, 0.2))
 Renderers.ChartJs.Render(chart, Size = Size(500, 350))
-    .AppendTo "entry" // where "entry" is the id of some element in the DOM
+|> Doc.RunById "entry" // where "entry" is the id of some element in the DOM
 ```
 ![Rendering charts](doc/render_radar.png)
 
@@ -101,7 +101,7 @@ let months = [|"January"; "February"; "March"; "April"; "May"; "June";
 let data = Array.zip months [| for _ in 1 .. 12 -> 0.0 |]
 let chart = Chart.Bar data
 Renderers.ChartJs.Render(chart, Size = Size(500, 350))
-    .AppendTo "entry" // where "entry" is the id of some element in the DOM
+|> Doc.RunById "entry" // where "entry" is the id of some element in the DOM
 
 let rnd = System.Random()
 async {
@@ -129,7 +129,7 @@ Chart.Combine [
                 DatasetFill = true,
                 BezierCurve = true)
 )
-|> fun el -> el.AppendTo "entry"
+|> Doc.RunById "entry"
 ```
 ![Updating chart](doc/combined_lines.png)
 
@@ -145,7 +145,7 @@ Pushing data into the stream and rendering it:
 let source = Event<float>()
 LiveChart.Line source.Publish
 |> fun ch -> Renderers.ChartJs.Render(ch, Window = 10) // only display 10 points of data max
-|> fun el -> el.AppendTo "entry"
+|> Doc.RunById "entry"
 
 
 let rnd = System.Random()
@@ -180,7 +180,7 @@ Chart.Combine [
         .WithStrokeColor(Color.Name "blue")
 ]
 |> fun ch -> Renderers.ChartJs.Render(ch, Window = 10) // only display 10 points of data max
-|> fun el -> el.AppendTo "entry"
+|> Doc.RunById "entry"
 
 
 let rnd = System.Random()

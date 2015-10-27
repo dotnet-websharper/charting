@@ -271,8 +271,9 @@ module Renderers =
                     chart.Charts
                     |> Seq.choose (fun chart ->
                         match chart.DataSet with
-                        | Static s -> Some <| Seq.map fst s
+                        | Static s as dt -> Some <| mkInitial dt window
                         | Live _ -> None)
+                    |> Seq.map (Seq.map fst)
                     |> fun e ->
                         if Seq.length e > 0 then
                             Seq.maxBy Seq.length e
