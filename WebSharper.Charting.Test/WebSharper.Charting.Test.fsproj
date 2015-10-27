@@ -37,7 +37,7 @@
     <Name>WebSharper.Charting.Test</Name>
     <RootNamespace>WebSharper.Charting.Testt</RootNamespace>
     <AssemblyName>WebSharper.Charting.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
   <Target Name="IncludeContent" BeforeTargets="Compile">
