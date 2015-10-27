@@ -2,6 +2,7 @@
   <info organisation="IntelliFactory" module="websharper.charting" revision="3.0" />
   <dependencies>
     <dependency name="websharper" rev="latest.integration" />
+    <dependency name="websharper.ui.next" rev="latest.integration" />
     <dependency name="websharper.chartjs" rev="latest.integration" />
     <dependency name="intellifactory.reactive" rev="latest.integration" />
   </dependencies>
