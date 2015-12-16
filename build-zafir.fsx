@@ -23,7 +23,7 @@ let test =
         .References(fun r ->
             [ 
                 r.NuGet("Zafir.ChartJs").Reference() 
-                r.NuGet("IntelliFactory.Reactive").Reference() 
+                r.NuGet("Zafir.Reactive").Reference() 
                 r.NuGet("Zafir.UI.Next").Reference()
                 r.Project main
             ])

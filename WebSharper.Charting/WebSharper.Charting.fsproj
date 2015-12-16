@@ -8,6 +8,7 @@
     <WebSharperProject>Library</WebSharperProject>
     <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
     <NuGetPackageImportStamp>db2a2658</NuGetPackageImportStamp>
+	<TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -51,7 +52,7 @@
       </PropertyGroup>
     </Otherwise>
   </Choose>
-  <Import Project="../build/net45/$(Name).proj" />
+  <Import Project="../build/net40/$(Name).proj" />
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="Pervasives.fsi" />

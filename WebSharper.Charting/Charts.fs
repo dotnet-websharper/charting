@@ -434,21 +434,21 @@ type Chart =
         Charts.PolarAreaChart(Charts.Static dataset, Charts.defaultChartConfig)
 
     static member PolarArea(dataset : seq<string * float>) =
-        let d = dataset |> Seq.map (fun (l, v) -> Charts.defaultPolarData l v)
+        let d = dataset |> Seq.map (fun t -> Charts.defaultPolarData (fst t) (snd t))
         Charts.PolarAreaChart(Charts.Static d, Charts.defaultChartConfig)
 
     static member Pie(dataset) =
         Charts.PieChart(Charts.Static dataset, Charts.defaultChartConfig)
 
     static member Pie(dataset : seq<string * float>) =
-        let d = dataset |> Seq.map (fun (l, v) -> Charts.defaultPolarData l v)
+        let d = dataset |> Seq.map (fun t -> Charts.defaultPolarData (fst t) (snd t))
         Charts.PieChart(Charts.Static d, Charts.defaultChartConfig)
 
     static member Doughnut(dataset) =
         Charts.DoughnutChart(Charts.Static dataset, Charts.defaultChartConfig)
 
     static member Doughnut(dataset : seq<string * float>) =
-        let d = dataset |> Seq.map (fun (l, v) -> Charts.defaultPolarData l v)
+        let d = dataset |> Seq.map (fun t -> Charts.defaultPolarData (fst t) (snd t))
         Charts.DoughnutChart(Charts.Static d, Charts.defaultChartConfig)
 
     static member Combine(charts) =
@@ -482,19 +482,19 @@ type LiveChart =
         Charts.PolarAreaChart(Charts.Live dataset, Charts.defaultChartConfig)
 
     static member PolarArea(dataset : IObservable<string * float>) =
-        let d = Reactive.Select dataset (fun (l, v) -> Charts.defaultPolarData l v)
+        let d = Reactive.Select dataset (fun t -> Charts.defaultPolarData (fst t) (snd t))
         Charts.PolarAreaChart(Charts.Live d, Charts.defaultChartConfig)
 
     static member Pie(dataset) =
         Charts.PieChart(Charts.Live dataset, Charts.defaultChartConfig)
 
     static member Pie(dataset : IObservable<string * float>) =
-        let d = Reactive.Select dataset (fun (l, v) -> Charts.defaultPolarData l v)
+        let d = Reactive.Select dataset (fun t -> Charts.defaultPolarData (fst t) (snd t))
         Charts.PieChart(Charts.Live d, Charts.defaultChartConfig)
 
     static member Doughnut(dataset) =
         Charts.DoughnutChart(Charts.Live dataset, Charts.defaultChartConfig)
 
     static member Doughnut(dataset : IObservable<string * float>) =
-        let d = Reactive.Select dataset (fun (l, v) -> Charts.defaultPolarData l v)
+        let d = Reactive.Select dataset (fun t -> Charts.defaultPolarData (fst t) (snd t))
         Charts.DoughnutChart(Charts.Live d, Charts.defaultChartConfig)
