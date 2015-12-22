@@ -4,6 +4,6 @@
     <dependency name="zafir" rev="latest.integration" />
     <dependency name="zafir.ui.next" rev="latest.integration" />
     <dependency name="zafir.chartjs" rev="latest.integration" />
-    <dependency name="intellifactory.reactive" rev="latest.integration" />
+    <dependency name="zafir.reactive" rev="latest.integration" />
   </dependencies>
 </ivy-module>
