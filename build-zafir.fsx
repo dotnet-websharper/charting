@@ -22,7 +22,7 @@ let test =
     bt.Zafir.Library("WebSharper.Charting.Test")
         .References(fun r ->
             [ 
-                r.NuGet("Zafir.ChartJs").Latest(true).ForceFoundVersion().Reference()
+                r.NuGet("Zafir.ChartJS").Latest(true).ForceFoundVersion().Reference()
                 r.NuGet("Zafir.Reactive").Latest(true).ForceFoundVersion().Reference()
                 r.NuGet("Zafir.UI.Next").Latest(true).ForceFoundVersion().Reference()
                 r.Project main
