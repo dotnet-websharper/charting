@@ -11,6 +11,7 @@ let bt =
 let main =
     bt.Zafir.Library("WebSharper.Charting")
         .SourcesFromProject()
+        .WithSourceMap()
         .References(fun r ->
             [ 
                 r.NuGet("Zafir.ChartJs").Latest(true).ForceFoundVersion().Reference()
@@ -20,6 +21,7 @@ let main =
 
 let test =
     bt.Zafir.Library("WebSharper.Charting.Test")
+        .WithSourceMap()
         .References(fun r ->
             [ 
                 r.NuGet("Zafir.ChartJS").Latest(true).ForceFoundVersion().Reference()
