@@ -31,7 +31,7 @@
     <Name>WebSharper.Charting</Name>
     <RootNamespace>WebSharper.Charting</RootNamespace>
     <AssemblyName>WebSharper.Charting</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
