@@ -14,11 +14,20 @@ module Renderers =
     open Charts
 
     let private defaultSize = Pervasives.Size(500, 200)
+    
+    [<Inline "$ds[$l] = $o">]
+    let addNew (ds: obj []) (l: int) (o:obj) = X<unit>
+
+    [<Inline "$ds.shift()">]
+    let popFrom (ds: obj []) = X<unit>
+
+    [<Inline "$ds.push($v)">]
+    let pushTo (ds: obj []) v = X<unit>
 
     type internal PolarChartType =
-        | PolarArea of ChartJs.PolarAreaChartConfiguration
-        | Pie of ChartJs.PieChartConfiguration
-        | Doughnut of ChartJs.DoughnutChartConfiguration
+        | PolarArea of ChartJs.CommonChartConfig
+        | Pie of ChartJs.CommonChartConfig
+        | Doughnut of ChartJs.CommonChartConfig
 
     module internal ChartJsInternal =
         type private BatchUpdater(?interval : int, ?maxCount : int) =
@@ -53,13 +62,20 @@ module Renderers =
 
         let private withNewCanvas (size : Size) k =
             let (Size (width, height)) = size
-            canvasAttr [ 
+            divAttr [
                 attr.width <| string width
                 attr.height <| string height
-                on.afterRender <| fun el ->
-                    let ctx = (As<CanvasElement> el).GetContext("2d")
-                    k el ctx
-            ] []
+                Attr.Style "width" (string width + "px")
+                Attr.Style "height" (string height + "px")
+            ] [
+                canvasAttr [ 
+                    on.afterRender <| fun el ->
+                        let ctx = (As<CanvasElement> el).GetContext("2d")
+                        (el :?> CanvasElement).Width <- width
+                        (el :?> CanvasElement).Height <- height
+                        k el ctx
+                ] []
+            ]
 
         let private mkInitial dataSet window =
             match dataSet with
@@ -88,160 +104,262 @@ module Renderers =
                 let initial = mkInitial chart.DataSet window 
 
                 let data =
-                    ChartJs.LineChartData(
-                        Labels   = (initial |> Array.map fst),
-                        Datasets = 
-                            [| ChartJs.LineChartDataset(
+                    ChartJs.ChartData(
+                            [| ChartJs.LineChartDataSet(
                                 Label = chart.Config.Title,
-                                FillColor = (string chart.SeriesConfig.FillColor),
-                                StrokeColor = (string chart.SeriesConfig.StrokeColor),
-                                PointColor = (string chart.ColorConfig.PointColor),
-                                PointHighlightFill = (string chart.ColorConfig.PointHighlightFill),
-                                PointHighlightStroke = (string chart.ColorConfig.PointHighlightStroke),
-                                PointStrokeColor = (string chart.ColorConfig.PointStrokeColor),
+                                Fill = false,
+                                BorderColor = (string chart.SeriesConfig.StrokeColor),
+                                PointBackgroundColor = Choice<string, string []>.Choice1Of2(string chart.ColorConfig.PointColor),
+                                PointHoverBackgroundColor = Choice<string, string []>.Choice1Of2(string chart.ColorConfig.PointHighlightFill),
+                                PointHoverBorderColor = Choice<string, string []>.Choice1Of2(string chart.ColorConfig.PointHighlightStroke),
+                                PointBorderColor = Choice<string, string []>.Choice1Of2(string chart.ColorConfig.PointStrokeColor),
                                 Data = (initial |> Array.map snd)) 
                             |])
+
+                data.Labels <- (initial |> Array.map fst)
 
                 let options =
                     defaultArg
                     <| cfg
-                    <| ChartJs.LineChartConfiguration(
-                        BezierCurve = false,
-                        DatasetFill = false)
+                    <| ChartJs.CommonChartConfig()
 
-                let rendered = ChartJs.Chart(ctx).Line(data, options)
+                let chartcreate =
+                    ChartJs.ChartCreate("line", data, options)
+
+                let rendered = ChartJs.Chart.Line(canvas, chartcreate)
 
                 registerUpdater (chart :> IMutableChart<float, int>)
                 <| fun (i, d) ->
-                    let ds : obj [] = rendered?datasets
-                    let s : obj [] = ds.[0]?points
-                    s.[i]?value <- d s.[i]?value
+                    let data : obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let s : obj [] = ds.[0]?data
+                    addNew s i (d (s.[i] :?> float))
                 <| rendered.Update
 
                 onEvent chart.DataSet window
-                <| fun _ _ -> rendered.RemoveData ()
-                <| fun _ (label, data) -> rendered.AddData([|data|], label)
+                <| fun _ _ ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iter (fun d ->
+                        popFrom (d?data : obj [])    
+                    )
+                    popFrom labels
+                    rendered.Update()
+                <| fun a (arr, label) ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iteri (fun i (d: obj) ->
+                        let dd : obj[] = d?data
+                        addNew (dd) (dd.Length) (arr.[i])
+                    )
+                    addNew labels (labels.Length) (label)
+                    rendered.Update()
 
         let RenderBarChart (chart : BarChart) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
                 let initial = mkInitial chart.DataSet window
 
                 let data =
-                    ChartJs.BarChartData(
-                        Labels   = (initial |> Array.map fst),
-                        Datasets = 
-                            [| ChartJs.BarChartDataset(
+                    ChartJs.ChartData(
+                            [| ChartJs.BarChartDataSet(
                                 Label = chart.Config.Title,
-                                FillColor = (string chart.SeriesConfig.FillColor),
-                                StrokeColor = (string chart.SeriesConfig.StrokeColor),
-                                Data = (initial |> Array.map snd)) 
+                                BackgroundColor = (string chart.SeriesConfig.FillColor),
+                                BorderColor = (string chart.SeriesConfig.StrokeColor),
+                                Data = (initial |> Array.map snd))
                             |])
+                data.Labels <- (initial |> Array.map fst)
 
                 let options =
                     defaultArg
                     <| cfg
-                    <| ChartJs.BarChartConfiguration(
-                        BarShowStroke = true)
+                    <| ChartJs.CommonChartConfig()
 
-                let rendered = ChartJs.Chart(ctx).Bar(data, options)
+                let chartcreate =
+                    ChartJs.ChartCreate("bar", data, options)
+
+                let rendered = ChartJs.Chart(canvas, chartcreate)
 
                 registerUpdater (chart :> IMutableChart<float, int>)
                 <| fun (i, d) ->
-                    let ds : obj [] = rendered?datasets
-                    let s : obj [] = ds.[0]?bars
-                    s.[i]?value <- d s.[i]?value
+                    let data : obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let s : obj [] = ds.[0]?data
+                    addNew s i (d (s.[i] :?> float))
                 <| rendered.Update
 
                 onEvent chart.DataSet window
-                <| fun _ _ -> rendered.RemoveData ()
-                <| fun _ (label, data) -> rendered.AddData([|data|], label)
+                <| fun _ _ ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iter (fun d ->
+                        popFrom (d?data : obj [])    
+                    )
+                    popFrom labels
+                    rendered.Update()
+                <| fun a (arr, label) ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iteri (fun i (d: obj) ->
+                        let dd : obj[] = d?data
+                        addNew (dd) (dd.Length) (arr.[i])
+                    )
+                    addNew labels (labels.Length) (label)
+                    rendered.Update()
 
         let RenderRadarChart (chart : RadarChart) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
                 let initial = mkInitial chart.DataSet window
 
                 let data =
-                    ChartJs.RadarChartData(
-                        Labels   = (initial |> Array.map fst),
-                        Datasets = 
-                            [| ChartJs.RadarChartDataset(
+                    ChartJs.ChartData(
+                            [| ChartJs.RadarChartDataSet(
                                 Label = chart.Config.Title,
-                                FillColor = (string chart.SeriesConfig.FillColor),
-                                StrokeColor = (string chart.SeriesConfig.StrokeColor),
-                                PointColor = (string chart.ColorConfig.PointColor),
-                                PointHighlightFill = (string chart.ColorConfig.PointHighlightFill),
-                                PointHighlightStroke = (string chart.ColorConfig.PointHighlightStroke),
-                                PointStrokeColor = (string chart.ColorConfig.PointStrokeColor),
+                                BackgroundColor = (string chart.SeriesConfig.FillColor),
+                                BorderColor = (string chart.SeriesConfig.StrokeColor),
+                                PointBackgroundColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointColor),
+                                PointHoverBackgroundColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointHighlightFill),
+                                PointHoverBorderColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointHighlightStroke),
+                                PointBorderColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointStrokeColor),
                                 Data = (initial |> Array.map snd)) 
                             |])
+
+                data.Labels <- (initial |> Array.map fst)
 
                 let options =
                     defaultArg
                     <| cfg
-                    <| ChartJs.RadarChartConfiguration(
-                        DatasetFill = true,
-                        DatasetStroke = true)
+                    <| ChartJs.CommonChartConfig()
+                
+                let chartcreate =
+                    ChartJs.ChartCreate("radar", data, options)
 
-                let rendered = ChartJs.Chart(ctx).Radar(data, options)
+                let rendered = ChartJs.Chart(canvas, chartcreate)
 
                 registerUpdater (chart :> IMutableChart<float, int>)
                 <| fun (i, d) ->
-                    let ds : obj [] = rendered?datasets
-                    let s : obj [] = ds.[0]?points
-                    s.[i]?value <- d s.[i]?value
+                    let data : obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let s : obj [] = ds.[0]?data
+                    addNew s i (d (s.[i] :?> float))
                 <| rendered.Update
 
                 onEvent chart.DataSet window
-                <| fun _ _ -> rendered.RemoveData ()
-                <| fun _ (label, data) -> rendered.AddData([|data|], label)
+                <| fun _ _ ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iter (fun d ->
+                        popFrom (d?data : obj [])    
+                    )
+                    popFrom labels
+                    rendered.Update()
+                <| fun a (arr, label) ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iteri (fun i (d: obj) ->
+                        let dd : obj[] = d?data
+                        addNew (dd) (dd.Length) (arr.[i])
+                    )
+                    addNew labels (labels.Length) (label)
+                    rendered.Update()
 
         let RenderPolarAreaChart (chart : IPolarAreaChart<_>) size typ window =
             withNewCanvas size <| fun canvas ctx ->
                 let initial = mkInitial chart.DataSet None
-                let convert e =
-                    match typ with
-                    | PolarChartType.PolarArea _ ->
-                        ChartJs.PolarAreaChartDataset(
-                            Color = string e.Color,
-                            Highlight = string e.Highlight,
-                            Value = e.Value,
-                            Label = e.Label)
-                    | PolarChartType.Pie _ ->
-                        ChartJs.PieChartDataset(
-                            Color = string e.Color,
-                            Highlight = string e.Highlight,
-                            Value = e.Value,
-                            Label = e.Label) :> _
-                    | PolarChartType.Doughnut _ ->
-                        ChartJs.DoughnutChartDataset(
-                            Color = string e.Color,
-                            Highlight = string e.Highlight,
-                            Value = e.Value,
-                            Label = e.Label) :> _
-
-                let data =
+                let toBGColor = 
                     initial
-                    |> Array.map convert
-
-                let rendered =
+                    |> Array.map (fun e -> string e.Color)
+                let toHBGColor = 
+                    initial
+                    |> Array.map (fun e -> string e.Highlight)
+                let toValue = 
+                    initial
+                    |> Array.map (fun e -> float e.Value)
+                let toLabel = 
+                    initial
+                    |> Array.map (fun e -> e.Label)
+                let cc =
                     match typ with
                     | PolarChartType.PolarArea opts ->
-                        ChartJs.Chart(ctx).PolarArea(data, opts)
-                    | PolarChartType.Pie opts ->
-                        let d = As<ChartJs.PieChartDataset []> data 
-                        ChartJs.Chart(ctx).Pie(d, opts) :> _
-                    | PolarChartType.Doughnut opts ->
-                        let d = As<ChartJs.DoughnutChartDataset []> data 
-                        ChartJs.Chart(ctx).Doughnut(d, opts) :> _
+                        let x =
+                            ChartJs.ChartData (
+                                [|
+                                    ChartJs.PolarChartDataSet(
+                                        Data = toValue,
+                                        BackgroundColor = toBGColor,
+                                        HoverBackgroundColor = toHBGColor
+                                    )
+                                |]
+                            )
+                        x.Labels <- toLabel
+                        ChartJs.ChartCreate("polar", x, opts)
+                    | PolarChartType.Pie opt ->
+                        let x =
+                            ChartJs.ChartData(
+                                [|
+                                ChartJs.PieChartDataSet(
+                                    Data = toValue,
+                                    BackgroundColor = toBGColor,
+                                    HoverBackgroundColor = toHBGColor)
+                                |]
+                            )
+                        x.Labels <- toLabel
+                        ChartJs.ChartCreate("pie", x, opt)
+                    | PolarChartType.Doughnut opt ->
+                        let x =
+                            ChartJs.ChartData(
+                                [|
+                                    ChartJs.DoughnutChartDataSet(
+                                        Data = toValue,
+                                        BackgroundColor = toBGColor,
+                                        HoverBackgroundColor = toHBGColor)
+                                |]
+                            )
+                        x.Labels <- toLabel
+                        ChartJs.ChartCreate("doughnut", x, opt)
 
-                (chart :> IMutableChart<float, int>).OnUpdate <| fun (i, d) ->
-                    let s : obj [] = rendered?segments
-                    s.[i]?value <- d s.[i]?value
+                let rendered = ChartJs.Chart(canvas, cc)
+                        
+                onEvent chart.DataSet window
+                <| fun _ _ ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iter (fun d ->
+                        popFrom (d?data : obj [])    
+                    )
+                    popFrom labels
+                    rendered.Update()
+                <| fun a (polardata) ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iteri (fun i (d: obj) ->
+                        let dd : obj[] = d?data
+                        addNew (dd) (dd.Length) (polardata.Value)
+                    )
+                    addNew labels (labels.Length) (a)
                     rendered.Update()
 
-                onEvent chart.DataSet window
-                <| fun _ _ -> rendered.RemoveData 0
-                <| fun size data -> rendered.AddData(convert data, size)
+                (chart :> IMutableChart<float, int>).OnUpdate <| fun (i, d) ->
+                    let data : obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let s : obj [] = ds.[0]?data
+                    addNew s i (d (s.[i] :?> float))
+                    rendered.Update()
 
         let private extractStreams dataSet =
             dataSet
@@ -280,42 +398,44 @@ module Renderers =
                         else Seq.empty
 
                 let data =
-                    ChartJs.LineChartData(
-                        Labels   = (labels |> Seq.toArray),
-                        Datasets = 
-                            (chart.Charts
-                            |> Seq.map (fun chart ->
-                                let initials = mkInitial chart.DataSet window
-                                ChartJs.LineChartDataset(
-                                    Label = chart.Config.Title,
-                                    FillColor = (string chart.SeriesConfig.FillColor),
-                                    StrokeColor = (string chart.SeriesConfig.StrokeColor),
-                                    PointColor = (string chart.ColorConfig.PointColor),
-                                    PointHighlightFill = (string chart.ColorConfig.PointHighlightFill),
-                                    PointHighlightStroke = (string chart.ColorConfig.PointHighlightStroke),
-                                    PointStrokeColor = (string chart.ColorConfig.PointStrokeColor),
-                                    Data = (initials |> Array.map snd))
-                            )
-                            |> Seq.toArray)
+                    ChartJs.ChartData( 
+                        (chart.Charts
+                        |> Seq.map (fun chart ->
+                            let initials = mkInitial chart.DataSet window
+                            ChartJs.LineChartDataSet(
+                                Label = chart.Config.Title,
+                                BackgroundColor = (string chart.SeriesConfig.FillColor),
+                                BorderColor = (string chart.SeriesConfig.StrokeColor),
+                                PointBackgroundColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointColor),
+                                PointHoverBackgroundColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointHighlightFill),
+                                PointHoverBorderColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointHighlightStroke),
+                                PointBorderColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointStrokeColor),
+                                Data = (initials |> Array.map snd)) :> ChartJs.ADataSet
+                        )
+                        |> Seq.toArray)
                     )
+
+                data.Labels <- (labels |> Seq.toArray)
 
                 let options =
                     defaultArg
                     <| cfg
-                    <| ChartJs.LineChartConfiguration(
-                        BezierCurve = false,
-                        DatasetFill = false)
+                    <| ChartJs.CommonChartConfig()
 
+                let chartcreate =
+                    ChartJs.ChartCreate("line", data, options)
+                
                 let rendered = 
-                    ChartJs.Chart(ctx).Line(data, options)
+                    ChartJs.Chart.Line(canvas, chartcreate)
 
                 chart.Charts
                 |> Seq.iteri (fun i chart ->
                     registerUpdater (chart :> IMutableChart<float, int>)
                     <| fun (j, d) ->
-                        let ds : obj [] = rendered?datasets
-                        let s : obj [] = ds.[i]?points
-                        s.[j]?value <- d s.[j]?value
+                        let data : obj = rendered?data
+                        let ds : obj [] = data?datasets
+                        let s : obj [] = ds.[i]?data
+                        addNew s j (d (s.[j] :?> float))
                     <| rendered.Update
                 )
 
@@ -325,9 +445,27 @@ module Renderers =
                     |> extractStreams
 
                 onCombinedEvent streams (Seq.length chart.Charts) window
-                <| fun _ _ -> rendered.RemoveData()
-                <| fun _ (arr, label) ->
-                    rendered.AddData(arr, label)
+                <| fun _ _ ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iter (fun d ->
+                        popFrom (d?data : obj [])    
+                    )
+                    popFrom labels
+                    rendered.Update()
+                <| fun a (arr, label) ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iteri (fun i (d: obj) ->
+                        let dd : obj[] = d?data
+                        addNew (dd) (dd.Length) (arr.[i])
+                    )
+                    addNew labels (labels.Length) (label)
+                    rendered.Update()
 
         let RenderCombinedBarChart (chart : CompositeChart<BarChart>) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
@@ -343,36 +481,40 @@ module Renderers =
                         else Seq.empty
 
                 let data =
-                    ChartJs.BarChartData(
-                        Labels   = (labels |> Seq.toArray),
-                        Datasets = 
+                    ChartJs.ChartData(
                             (chart.Charts
                             |> Seq.map (fun chart ->
                                 let initials = mkInitial chart.DataSet window
-                                ChartJs.BarChartDataset(
+                                ChartJs.BarChartDataSet(
                                     Label = chart.Config.Title,
-                                    FillColor = (string chart.SeriesConfig.FillColor),
-                                    StrokeColor = (string chart.SeriesConfig.StrokeColor),
-                                    Data = (initials |> Array.map snd)) 
+                                    BackgroundColor = (string chart.SeriesConfig.FillColor),
+                                    BorderColor = (string chart.SeriesConfig.StrokeColor),
+                                    Data = (initials |> Array.map snd)) :> ChartJs.ADataSet 
                             )
                             |> Seq.toArray)
                     )
 
+                data.Labels <- (labels |> Seq.toArray)
+
                 let options =
                     defaultArg
                     <| cfg
-                    <| ChartJs.BarChartConfiguration(BarShowStroke = true)
+                    <| ChartJs.CommonChartConfig()
+
+                let chartcreate =
+                    ChartJs.ChartCreate("bar", data, options)
 
                 let rendered = 
-                    ChartJs.Chart(ctx).Bar(data, options)
+                    ChartJs.Chart(canvas, chartcreate)
 
                 chart.Charts
                 |> Seq.iteri (fun i chart ->
                     registerUpdater (chart :> IMutableChart<float, int>)
                     <| fun (j, d) ->
-                        let ds : obj [] = rendered?datasets
-                        let s : obj [] = ds.[i]?bars
-                        s.[j]?value <- d s.[j]?value
+                        let data : obj = rendered?data
+                        let ds : obj [] = data?datasets
+                        let s : obj [] = ds.[i]?data
+                        addNew s j (d (s.[j] :?> float))
                     <| rendered.Update
                 )
 
@@ -382,9 +524,27 @@ module Renderers =
                     |> extractStreams
 
                 onCombinedEvent streams (Seq.length chart.Charts) window
-                <| fun _ _ -> rendered.RemoveData()
-                <| fun _ (arr, label) ->
-                    rendered.AddData(arr, label)
+                <| fun _ _ ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iter (fun d ->
+                        popFrom (d?data : obj [])    
+                    )
+                    popFrom labels
+                    rendered.Update()
+                <| fun a (arr, label) ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iteri (fun i (d: obj) ->
+                        let dd : obj[] = d?data
+                        addNew (dd) (dd.Length) (arr.[i])
+                    )
+                    addNew labels (labels.Length) (label)
+                    rendered.Update()
 
         let RenderCombinedRadarChart (chart : CompositeChart<RadarChart>) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
@@ -400,42 +560,44 @@ module Renderers =
                         else Seq.empty
 
                 let data =
-                    ChartJs.RadarChartData(
-                        Labels   = (labels |> Seq.toArray),
-                        Datasets = 
+                    ChartJs.ChartData(
                             (chart.Charts
                             |> Seq.map (fun chart ->
                                 let initials = mkInitial chart.DataSet window
-                                ChartJs.RadarChartDataset(
+                                ChartJs.RadarChartDataSet(
                                     Label = chart.Config.Title,
-                                    FillColor = (string chart.SeriesConfig.FillColor),
-                                    StrokeColor = (string chart.SeriesConfig.StrokeColor),
-                                    PointColor = (string chart.ColorConfig.PointColor),
-                                    PointHighlightFill = (string chart.ColorConfig.PointHighlightFill),
-                                    PointHighlightStroke = (string chart.ColorConfig.PointHighlightStroke),
-                                    PointStrokeColor = (string chart.ColorConfig.PointStrokeColor),
-                                    Data = (initials |> Array.map snd))
+                                    BackgroundColor = (string chart.SeriesConfig.FillColor),
+                                    BorderColor = (string chart.SeriesConfig.StrokeColor),
+                                    PointBackgroundColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointColor),
+                                    PointHoverBackgroundColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointHighlightFill),
+                                    PointHoverBorderColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointHighlightStroke),
+                                    PointBorderColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointStrokeColor),
+                                    Data = (initials |> Array.map snd)) :> ChartJs.ADataSet
                             )
                             |> Seq.toArray)
                     )
 
+                data.Labels <- (labels |> Seq.toArray)
+
                 let options =
                     defaultArg
                     <| cfg
-                    <| ChartJs.RadarChartConfiguration(
-                        DatasetFill = true,
-                        DatasetStroke = true)
+                    <| ChartJs.CommonChartConfig()
+
+                let chartcreate =
+                    ChartJs.ChartCreate("radar", data, options)
 
                 let rendered = 
-                    ChartJs.Chart(ctx).Radar(data, options)
+                    ChartJs.Chart(canvas, chartcreate)
 
                 chart.Charts
                 |> Seq.iteri (fun i chart ->
                     registerUpdater (chart :> IMutableChart<float, int>)
                     <| fun (j, d) ->
-                        let ds : obj [] = rendered?datasets
-                        let s : obj [] = ds.[i]?points
-                        s.[j]?value <- d s.[j]?value
+                        let data : obj = rendered?data
+                        let ds : obj [] = data?datasets
+                        let s : obj [] = ds.[i]?data
+                        addNew s j (d (s.[j] :?> float))
                     <| rendered.Update
                 )
 
@@ -444,66 +606,85 @@ module Renderers =
                     |> Seq.map (fun chart -> chart.DataSet)
                     |> extractStreams
 
+
                 onCombinedEvent streams (Seq.length chart.Charts) window
-                <| fun _ _ -> rendered.RemoveData()
-                <| fun _ (arr, label) ->
-                    rendered.AddData(arr, label)
+                <| fun _ _ ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iter (fun d ->
+                        popFrom (d?data : obj [])    
+                    )
+                    popFrom labels
+                    rendered.Update()
+                <| fun a (arr, label) ->
+                    let data: obj = rendered?data
+                    let ds : obj [] = data?datasets
+                    let labels : obj [] = data?labels
+                    ds
+                    |> Array.iteri (fun i (d: obj) ->
+                        let dd : obj[] = d?data
+                        addNew (dd) (dd.Length) (arr.[i])
+                    )
+                    addNew labels (labels.Length) (label)
+                    rendered.Update()
 
     type ChartJs =
         static member Render(chart : Charts.LineChart,
                              ?Size : Size,
-                             ?Config : ChartJs.LineChartConfiguration,
+                             ?Config : ChartJs.CommonChartConfig,
                              ?Window : int) =
             ChartJsInternal.RenderLineChart chart (defaultArg Size defaultSize) Config Window
 
         static member Render(chart : Charts.BarChart,
                              ?Size : Size,
-                             ?Config : ChartJs.BarChartConfiguration,
+                             ?Config : ChartJs.CommonChartConfig,
                              ?Window : int) =
             ChartJsInternal.RenderBarChart chart (defaultArg Size defaultSize) Config Window
 
         static member Render(chart : Charts.RadarChart,
                              ?Size : Size,
-                             ?Config : ChartJs.RadarChartConfiguration,
+                             ?Config : ChartJs.CommonChartConfig,
                              ?Window : int) =
             ChartJsInternal.RenderRadarChart chart (defaultArg Size defaultSize) Config Window
-
-        static member Render(chart : Charts.PieChart,
-                             ?Size : Size,
-                             ?Config : ChartJs.PieChartConfiguration,
-                             ?Window : int) =
-            let typ = PolarChartType.Pie <| defaultArg Config (ChartJs.PieChartConfiguration())
-            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
-
-        static member Render(chart : Charts.DoughnutChart,
-                             ?Size : Size,
-                             ?Config : ChartJs.DoughnutChartConfiguration,
-                             ?Window : int) =
-            let typ = PolarChartType.Doughnut <| defaultArg Config (ChartJs.DoughnutChartConfiguration())
-            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
-
-        static member Render(chart : Charts.PolarAreaChart,
-                             ?Size : Size,
-                             ?Config : ChartJs.PolarAreaChartConfiguration,
-                             ?Window : int) =
-            let typ = PolarChartType.PolarArea <| defaultArg Config (ChartJs.PolarAreaChartConfiguration())
-            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
-
+//
+//        static member Render(chart : Charts.PieChart,
+//                             ?Size : Size,
+//                             ?Config : ChartJs.CommonChartConfig,
+//                             ?Window : int) =
+//            let typ = PolarChartType.Pie <| defaultArg Config (ChartJs.CommonChartConfig())
+//            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
+//
+//        static member Render(chart : Charts.DoughnutChart,
+//                             ?Size : Size,
+//                             ?Config : ChartJs.DoughnutChartConfiguration,
+//                             ?Window : int) =
+//            let typ = PolarChartType.Doughnut <| defaultArg Config (ChartJs.DoughnutChartConfiguration())
+//            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
+//
+//        static member Render(chart : Charts.PolarAreaChart,
+//                             ?Size : Size,
+//                             ?Config : ChartJs.PolarAreaChartConfiguration,
+//                             ?Window : int) =
+//            let typ = PolarChartType.PolarArea <| defaultArg Config (ChartJs.PolarAreaChartConfiguration())
+//            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
+//
         static member Render(chart : Charts.CompositeChart<LineChart>,
                              ?Size : Size,
-                             ?Config : ChartJs.LineChartConfiguration,
+                             ?Config : ChartJs.CommonChartConfig,
                              ?Window : int) =
             ChartJsInternal.RenderCombinedLineChart chart (defaultArg Size defaultSize) Config Window
 
         static member Render(chart : Charts.CompositeChart<BarChart>,
                              ?Size : Size,
-                             ?Config : ChartJs.BarChartConfiguration,
+                             ?Config : ChartJs.CommonChartConfig,
                              ?Window : int) =
             ChartJsInternal.RenderCombinedBarChart chart (defaultArg Size defaultSize) Config Window
 
         static member Render(chart : Charts.CompositeChart<RadarChart>,
                              ?Size : Size,
-                             ?Config : ChartJs.RadarChartConfiguration,
+                             ?Config : ChartJs.CommonChartConfig,
                              ?Window : int) =
             ChartJsInternal.RenderCombinedRadarChart chart (defaultArg Size defaultSize) Config Window
 

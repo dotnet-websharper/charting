@@ -6,9 +6,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{6badb6fe-e6ad-45f5-a66f-0c738ee479e5}</ProjectGuid>
     <WebSharperProject>Library</WebSharperProject>
-    <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
     <NuGetPackageImportStamp>db2a2658</NuGetPackageImportStamp>
-	<TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+	  <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -31,7 +30,6 @@
     <Name>WebSharper.Charting</Name>
     <RootNamespace>WebSharper.Charting</RootNamespace>
     <AssemblyName>WebSharper.Charting</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <WarningLevel>3</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -52,8 +50,8 @@
       </PropertyGroup>
     </Otherwise>
   </Choose>
-  <Import Project="../build/net40/$(Name).proj" />
   <Import Project="$(FSharpTargetsPath)" />
+  <Import Project="../build/net40/$(Name).proj" />
   <ItemGroup>
     <Compile Include="Pervasives.fsi" />
     <Compile Include="Pervasives.fs" />

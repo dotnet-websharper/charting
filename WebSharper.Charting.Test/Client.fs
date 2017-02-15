@@ -43,7 +43,7 @@ module Client =
             ]
             |> Chart.Combine
             |> fun e -> 
-                let c = ChartJs.LineChartConfiguration(DatasetFill = true)
+                let c = ChartJs.CommonChartConfig()
                 Renderers.ChartJs.Render(e, Config = c)
 
         let stream1 = Event<float>()
