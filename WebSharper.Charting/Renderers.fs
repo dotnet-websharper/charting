@@ -109,10 +109,10 @@ module Renderers =
                                 Label = chart.Config.Title,
                                 Fill = false,
                                 BorderColor = (string chart.SeriesConfig.StrokeColor),
-                                PointBackgroundColor = Choice<string, string []>.Choice1Of2(string chart.ColorConfig.PointColor),
-                                PointHoverBackgroundColor = Choice<string, string []>.Choice1Of2(string chart.ColorConfig.PointHighlightFill),
-                                PointHoverBorderColor = Choice<string, string []>.Choice1Of2(string chart.ColorConfig.PointHighlightStroke),
-                                PointBorderColor = Choice<string, string []>.Choice1Of2(string chart.ColorConfig.PointStrokeColor),
+                                PointBackgroundColor = Union1Of2(string chart.ColorConfig.PointColor),
+                                PointHoverBackgroundColor = Union1Of2(string chart.ColorConfig.PointHighlightFill),
+                                PointHoverBorderColor = Union1Of2(string chart.ColorConfig.PointHighlightStroke),
+                                PointBorderColor = Union1Of2(string chart.ColorConfig.PointStrokeColor),
                                 Data = (initial |> Array.map snd)) 
                             |])
 
@@ -224,10 +224,10 @@ module Renderers =
                                 Label = chart.Config.Title,
                                 BackgroundColor = (string chart.SeriesConfig.FillColor),
                                 BorderColor = (string chart.SeriesConfig.StrokeColor),
-                                PointBackgroundColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointColor),
-                                PointHoverBackgroundColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointHighlightFill),
-                                PointHoverBorderColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointHighlightStroke),
-                                PointBorderColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointStrokeColor),
+                                PointBackgroundColor = Union1Of2(string chart.ColorConfig.PointColor),
+                                PointHoverBackgroundColor = Union1Of2(string chart.ColorConfig.PointHighlightFill),
+                                PointHoverBorderColor = Union1Of2(string chart.ColorConfig.PointHighlightStroke),
+                                PointBorderColor = Union1Of2(string chart.ColorConfig.PointStrokeColor),
                                 Data = (initial |> Array.map snd)) 
                             |])
 
@@ -406,10 +406,10 @@ module Renderers =
                                 Label = chart.Config.Title,
                                 BackgroundColor = (string chart.SeriesConfig.FillColor),
                                 BorderColor = (string chart.SeriesConfig.StrokeColor),
-                                PointBackgroundColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointColor),
-                                PointHoverBackgroundColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointHighlightFill),
-                                PointHoverBorderColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointHighlightStroke),
-                                PointBorderColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointStrokeColor),
+                                PointBackgroundColor = Union1Of2(string chart.ColorConfig.PointColor),
+                                PointHoverBackgroundColor = Union1Of2(string chart.ColorConfig.PointHighlightFill),
+                                PointHoverBorderColor = Union1Of2(string chart.ColorConfig.PointHighlightStroke),
+                                PointBorderColor = Union1Of2(string chart.ColorConfig.PointStrokeColor),
                                 Data = (initials |> Array.map snd)) :> ChartJs.ADataSet
                         )
                         |> Seq.toArray)
@@ -568,10 +568,10 @@ module Renderers =
                                     Label = chart.Config.Title,
                                     BackgroundColor = (string chart.SeriesConfig.FillColor),
                                     BorderColor = (string chart.SeriesConfig.StrokeColor),
-                                    PointBackgroundColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointColor),
-                                    PointHoverBackgroundColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointHighlightFill),
-                                    PointHoverBorderColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointHighlightStroke),
-                                    PointBorderColor = Choice<string, string[]>.Choice1Of2(string chart.ColorConfig.PointStrokeColor),
+                                    PointBackgroundColor = Union1Of2(string chart.ColorConfig.PointColor),
+                                    PointHoverBackgroundColor = Union1Of2(string chart.ColorConfig.PointHighlightFill),
+                                    PointHoverBorderColor = Union1Of2(string chart.ColorConfig.PointHighlightStroke),
+                                    PointBorderColor = Union1Of2(string chart.ColorConfig.PointStrokeColor),
                                     Data = (initials |> Array.map snd)) :> ChartJs.ADataSet
                             )
                             |> Seq.toArray)
