@@ -28,26 +28,26 @@ module Renderers = begin
 //            /// <parameter name="Window">How many data points should be rendered max.</parameter>
             static member Render : chart:Charts.RadarChart * ?Size:Pervasives.Size * ?Config:ChartJs.CommonChartConfig * ?Window:int -> WebSharper.UI.Next.Elt
 //            
-//            /// <summary>Renders a PieChart instance.</summary>
-//            /// <parameter name="chart">The chart to be rendered.</parameter>
-//            /// <parameter name="Size">The Size of the canvas.</parameter>
-//            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
-//            /// <parameter name="Window">How many data points should be rendered max.</parameter>
-//            static member Render : chart:Charts.PieChart * ?Size:Pervasives.Size * ?Config:ChartJs.CommonChartConfig * ?Window:int -> WebSharper.UI.Next.Elt
-//            
-//            /// <summary>Renders a DoughnutChart instance.</summary>
-//            /// <parameter name="chart">The chart to be rendered.</parameter>
-//            /// <parameter name="Size">The Size of the canvas.</parameter>
-//            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
-//            /// <parameter name="Window">How many data points should be rendered max.</parameter>
-//            static member Render : chart:Charts.DoughnutChart * ?Size:Pervasives.Size * ?Config:ChartJs.CommonChartConfig * ?Window:int -> WebSharper.UI.Next.Elt
-//            
-//            /// <summary>Renders a PolarAreaChart instance.</summary>
-//            /// <parameter name="chart">The chart to be rendered.</parameter>
-//            /// <parameter name="Size">The Size of the canvas.</parameter>
-//            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
-//            /// <parameter name="Window">How many data points should be rendered max.</parameter>
-//            static member Render : chart:Charts.PolarAreaChart * ?Size:Pervasives.Size * ?Config:ChartJs.CommonChartConfig * ?Window:int -> WebSharper.UI.Next.Elt
+            /// <summary>Renders a PieChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Size">The Size of the canvas.</parameter>
+            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
+            static member Render : chart:Charts.PieChart * ?Size:Pervasives.Size * ?Config:ChartJs.CommonChartConfig * ?Window:int -> WebSharper.UI.Next.Elt
+            
+            /// <summary>Renders a DoughnutChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Size">The Size of the canvas.</parameter>
+            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
+            static member Render : chart:Charts.DoughnutChart * ?Size:Pervasives.Size * ?Config:ChartJs.CommonChartConfig * ?Window:int -> WebSharper.UI.Next.Elt
+            
+            /// <summary>Renders a PolarAreaChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Size">The Size of the canvas.</parameter>
+            /// <parameter name="Config">ChartJs configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
+            static member Render : chart:Charts.PolarAreaChart * ?Size:Pervasives.Size * ?Config:ChartJs.CommonChartConfig * ?Window:int -> WebSharper.UI.Next.Elt
 //            
             /// <summary>Renders a combined LineChart.</summary>
             /// <parameter name="chart">The chart to be rendered.</parameter>

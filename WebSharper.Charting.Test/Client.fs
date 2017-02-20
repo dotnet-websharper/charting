@@ -46,6 +46,92 @@ module Client =
                 let c = ChartJs.CommonChartConfig()
                 Renderers.ChartJs.Render(e, Config = c)
 
+        let pie =
+            let data =
+                [
+                    {
+                        Charts.PolarData.Value = 25.
+                        Charts.PolarData.Color = Color.Name "red"
+                        Charts.PolarData.Highlight = Color.Name "orange"
+                        Charts.PolarData.Label = "Part1"
+                    }
+                    {
+                        Charts.PolarData.Value = 75.
+                        Charts.PolarData.Color = Color.Name "blue"
+                        Charts.PolarData.Highlight = Color.Name "green"
+                        Charts.PolarData.Label = "Part2"
+                    }
+                ]
+            Chart.Pie(data)
+                .WithTitle "Pie example"
+        
+        let renderedPie =
+            let c = ChartJs.CommonChartConfig()
+            Renderers.ChartJs.Render(pie, Config = c)
+
+        let doughnut =
+            let data =
+                [
+                    {
+                        Charts.PolarData.Value = 27.
+                        Charts.PolarData.Color = Color.Name "red"
+                        Charts.PolarData.Highlight = Color.Name "orange"
+                        Charts.PolarData.Label = "Part1"
+                    }
+                    {
+                        Charts.PolarData.Value = 23.
+                        Charts.PolarData.Color = Color.Name "blue"
+                        Charts.PolarData.Highlight = Color.Name "green"
+                        Charts.PolarData.Label = "Part2"
+                    }
+                    {
+                        Charts.PolarData.Value = 50.
+                        Charts.PolarData.Color = Color.Name "yellow"
+                        Charts.PolarData.Highlight = Color.Name "purple"
+                        Charts.PolarData.Label = "Part3"
+                    }
+                ]
+            Chart.Doughnut(data)
+                
+        
+        let renderedDoughnut =
+            let c = ChartJs.CommonChartConfig()
+            Renderers.ChartJs.Render(doughnut, Config = c)
+
+        let polar = 
+            let data =
+                [
+                    {
+                        Charts.PolarData.Value = 27.
+                        Charts.PolarData.Color = Color.Name "red"
+                        Charts.PolarData.Highlight = Color.Name "orange"
+                        Charts.PolarData.Label = "Part1"
+                    }
+                    {
+                        Charts.PolarData.Value = 23.
+                        Charts.PolarData.Color = Color.Name "blue"
+                        Charts.PolarData.Highlight = Color.Name "green"
+                        Charts.PolarData.Label = "Part2"
+                    }
+                    {
+                        Charts.PolarData.Value = 37.
+                        Charts.PolarData.Color = Color.Name "yellow"
+                        Charts.PolarData.Highlight = Color.Name "purple"
+                        Charts.PolarData.Label = "Part3"
+                    }
+                    {
+                        Charts.PolarData.Value = 13.
+                        Charts.PolarData.Color = Color.Name "brown"
+                        Charts.PolarData.Highlight = Color.Name "black"
+                        Charts.PolarData.Label = "Part4"
+                    }
+                ]
+            Chart.PolarArea(data)
+
+        let renderedPolar =
+            let c = ChartJs.CommonChartConfig()
+            Renderers.ChartJs.Render(polar, Config = c)
+
         let stream1 = Event<float>()
         let stream2 = Event<float>()
 
@@ -63,6 +149,22 @@ module Client =
             ]
             |> Chart.Combine
             |> fun ch -> Renderers.ChartJs.Render(ch, Window = 10)
+
+        let bar1 =
+            Chart.Bar([ for x in 1.0 .. 10.0 -> (string x, x) ])
+                .WithFillColor(Color.Name "red")
+
+        let bar2 =
+            Chart.Bar([ for x in 1.0 .. 10.0 -> (string x, x * x ) ])
+                .WithFillColor(Color.Name "blue")
+
+        let combinedBar =
+            [
+                bar1
+                bar2
+            ]
+            |> Chart.Combine
+            |> fun ch -> Renderers.ChartJs.Render(ch)
 
         let rnd = System.Random()
         async {
@@ -130,6 +232,10 @@ module Client =
             chart |> Renderers.ChartJs.Render
             cr
             crs
+            combinedBar
+            renderedPie
+            renderedDoughnut
+            renderedPolar
             Renderers.ChartJs.Render(blueLine, Size = Size(300, 200))
             Renderers.ChartJs.Render(redLine, Size = Size(300, 200))
         ]

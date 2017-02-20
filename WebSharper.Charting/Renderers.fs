@@ -303,7 +303,7 @@ module Renderers =
                                 |]
                             )
                         x.Labels <- toLabel
-                        ChartJs.ChartCreate("polar", x, opts)
+                        ChartJs.ChartCreate("polarArea", x, opts)
                     | PolarChartType.Pie opt ->
                         let x =
                             ChartJs.ChartData(
@@ -648,28 +648,28 @@ module Renderers =
                              ?Config : ChartJs.CommonChartConfig,
                              ?Window : int) =
             ChartJsInternal.RenderRadarChart chart (defaultArg Size defaultSize) Config Window
-//
-//        static member Render(chart : Charts.PieChart,
-//                             ?Size : Size,
-//                             ?Config : ChartJs.CommonChartConfig,
-//                             ?Window : int) =
-//            let typ = PolarChartType.Pie <| defaultArg Config (ChartJs.CommonChartConfig())
-//            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
-//
-//        static member Render(chart : Charts.DoughnutChart,
-//                             ?Size : Size,
-//                             ?Config : ChartJs.DoughnutChartConfiguration,
-//                             ?Window : int) =
-//            let typ = PolarChartType.Doughnut <| defaultArg Config (ChartJs.DoughnutChartConfiguration())
-//            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
-//
-//        static member Render(chart : Charts.PolarAreaChart,
-//                             ?Size : Size,
-//                             ?Config : ChartJs.PolarAreaChartConfiguration,
-//                             ?Window : int) =
-//            let typ = PolarChartType.PolarArea <| defaultArg Config (ChartJs.PolarAreaChartConfiguration())
-//            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
-//
+
+        static member Render(chart : Charts.PieChart,
+                             ?Size : Size,
+                             ?Config : ChartJs.CommonChartConfig,
+                             ?Window : int) =
+            let typ = PolarChartType.Pie <| defaultArg Config (ChartJs.CommonChartConfig())
+            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
+
+        static member Render(chart : Charts.DoughnutChart,
+                             ?Size : Size,
+                             ?Config : ChartJs.CommonChartConfig,
+                             ?Window : int) =
+            let typ = PolarChartType.Doughnut <| defaultArg Config (ChartJs.CommonChartConfig())
+            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
+
+        static member Render(chart : Charts.PolarAreaChart,
+                             ?Size : Size,
+                             ?Config : ChartJs.CommonChartConfig,
+                             ?Window : int) =
+            let typ = PolarChartType.PolarArea <| defaultArg Config (ChartJs.CommonChartConfig())
+            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
+
         static member Render(chart : Charts.CompositeChart<LineChart>,
                              ?Size : Size,
                              ?Config : ChartJs.CommonChartConfig,
