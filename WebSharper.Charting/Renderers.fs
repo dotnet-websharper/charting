@@ -1,6 +1,7 @@
 ﻿namespace WebSharper.Charting
 
 open System
+open System.Runtime.CompilerServices
 open WebSharper
 
 [<JavaScript>]
@@ -15,13 +16,13 @@ module Renderers =
 
     let private defaultSize = Pervasives.Size(500, 200)
     
-    [<Inline "$ds[$l] = $o">]
+    [<Inline "$ds[$l] = $o"; MethodImpl(MethodImplOptions.NoInlining)>]
     let addNew (ds: obj []) (l: int) (o:obj) = X<unit>
 
-    [<Inline "$ds.shift()">]
+    [<Inline "$ds.shift()"; MethodImpl(MethodImplOptions.NoInlining)>]
     let popFrom (ds: obj []) = X<unit>
 
-    [<Inline "$ds.push($v)">]
+    [<Inline "$ds.push($v)"; MethodImpl(MethodImplOptions.NoInlining)>]
     let pushTo (ds: obj []) v = X<unit>
 
     type internal PolarChartType =
