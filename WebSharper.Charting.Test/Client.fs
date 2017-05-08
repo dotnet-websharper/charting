@@ -17,6 +17,7 @@ type EmptyChart(title : string) =
 
 [<JavaScript>]
 module Client =
+    open WebSharper.UI.Next
 
 #if ZAFIR
     [<SPAEntryPoint>]
@@ -24,7 +25,7 @@ module Client =
 #else
     let Main =
 #endif
-        let data = [ for x in 1.0 .. 9.0 -> (string x, x ** 2.0) ]
+        let data = [ for x in 1.0 .. 9.0 -> (string x + "^2", x ** 2.0) ]
 
         let chart = Chart.PolarArea(data)
 
@@ -132,8 +133,8 @@ module Client =
             let c = ChartJs.CommonChartConfig()
             Renderers.ChartJs.Render(polar, Config = c)
 
-        let stream1 = Event<float>()
-        let stream2 = Event<float>()
+        let stream1 = Event<string * float>()
+        let stream2 = Event<string * float>()
 
 
         let b1 = LiveChart.Radar stream1.Publish
@@ -179,19 +180,37 @@ module Client =
         }
         |> Async.Start
 
-        let generate (s : Event<float>) range miniv maxiv =
+        let generate (s : Event<string * float>) range miniv maxiv =
+            let rand = System.Random()
+            let mutable x = 1
+            async {
+                while true do
+                    let iv = rand.Next(miniv, maxiv)
+                    do! Async.Sleep iv
+                    let a = rand.NextDouble() * range
+                    let st = string x
+                    x <- x + 1
+                    s.Trigger (st, a)
+            }
+            |> Async.Start
+
+        let stream3 = Event<float>()
+
+        let generateWithoutLabel (s : Event<float>) range miniv maxiv =
             let rand = System.Random()
             async {
                 while true do
                     let iv = rand.Next(miniv, maxiv)
                     do! Async.Sleep iv
                     let a = rand.NextDouble() * range
-                    s.Trigger a
+                    s.Trigger (a)
             }
             |> Async.Start
 
         generate stream1 300. 1000 1250
         generate stream2 100. 1000 1050
+
+        generateWithoutLabel stream3 100. 1000 1050
 //
 //        let months = [|"January"; "February"; "March"; "April"; "May"; "June";
 //                       "July"; "August"; "September"; "October"; "November"; "December"|]
@@ -219,7 +238,38 @@ module Client =
 //                .WithFillColor(Color.Rgba(40, 150, 40, 0.2))
 //                .WithStrokeColor(Color.Name "blue")
 //        ]
+    
+        let lc =
+            Renderers.ChartJs.Render(
+                LiveChart.Line(stream1.Publish)
+                    .WithTitle("LiveChart example")
+                    .WithFillColor(Color.Rgba(40, 40, 150, 0.2))
+                    .WithPointColor(Color.Name "red")
+                    .WithStrokeColor(Color.Name "green"),
+                Window = 30
+            )
 
+        let combinedLive =
+            Chart.Combine [
+                LiveChart.Line(stream1.Publish)
+                    .WithTitle("stream1")
+                    .WithPointColor(Color.Name "yellow")
+                    .WithStrokeColor(Color.Name "black")
+                    .WithFill(false)
+                LiveChart.Line(stream2.Publish)
+                    .WithTitle("stream2")
+                    .WithPointColor(Color.Name "red")
+                    .WithStrokeColor(Color.Name "green")
+                    .WithFill(false)
+            ]
+
+        let withoutLabel =
+            Renderers.ChartJs.Render(
+                LiveChart.Line(stream3.Publish)
+                    .WithTitle("without label"),
+                Window = 30
+            )
+            
         let data = [for x in 1.0 .. 9.0 -> (string x, x * x)]
         let chart =
             Chart.Line(data)
@@ -238,6 +288,11 @@ module Client =
             renderedPolar
             Renderers.ChartJs.Render(blueLine, Size = Size(300, 200))
             Renderers.ChartJs.Render(redLine, Size = Size(300, 200))
+            hr []
+            div [text "Live Charts"]
+            lc
+            Renderers.ChartJs.Render(combinedLive, Window = 30)
+            withoutLabel
         ]
         
         |> Doc.RunById "entry"

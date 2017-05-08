@@ -102,12 +102,12 @@ module Renderers =
         let RenderLineChart (chart : LineChart) size cfg window =
             withNewCanvas size <| fun canvas ctx ->
                 let initial = mkInitial chart.DataSet window 
-
                 let data =
                     ChartJs.ChartData(
                             [| ChartJs.LineChartDataSet(
                                 Label = chart.Config.Title,
-                                Fill = false,
+                                Fill = chart.SeriesConfig.IsFilled,
+                                BackgroundColor = string chart.SeriesConfig.FillColor,
                                 BorderColor = (string chart.SeriesConfig.StrokeColor),
                                 PointBackgroundColor = Union1Of2(string chart.ColorConfig.PointColor),
                                 PointHoverBackgroundColor = Union1Of2(string chart.ColorConfig.PointHighlightFill),
@@ -147,14 +147,14 @@ module Renderers =
                     )
                     popFrom labels
                     rendered.Update()
-                <| fun a (arr, label) ->
+                <| fun a (label, arr) ->
                     let data: obj = rendered?data
                     let ds : obj [] = data?datasets
                     let labels : obj [] = data?labels
                     ds
                     |> Array.iteri (fun i (d: obj) ->
                         let dd : obj[] = d?data
-                        addNew (dd) (dd.Length) (arr.[i])
+                        addNew (dd) (dd.Length) (arr)
                     )
                     addNew labels (labels.Length) (label)
                     rendered.Update()
@@ -202,14 +202,14 @@ module Renderers =
                     )
                     popFrom labels
                     rendered.Update()
-                <| fun a (arr, label) ->
+                <| fun a (label, arr) ->
                     let data: obj = rendered?data
                     let ds : obj [] = data?datasets
                     let labels : obj [] = data?labels
                     ds
                     |> Array.iteri (fun i (d: obj) ->
                         let dd : obj[] = d?data
-                        addNew (dd) (dd.Length) (arr.[i])
+                        addNew (dd) (dd.Length) (arr)
                     )
                     addNew labels (labels.Length) (label)
                     rendered.Update()
@@ -262,14 +262,14 @@ module Renderers =
                     )
                     popFrom labels
                     rendered.Update()
-                <| fun a (arr, label) ->
+                <| fun a (label, arr) ->
                     let data: obj = rendered?data
                     let ds : obj [] = data?datasets
                     let labels : obj [] = data?labels
                     ds
                     |> Array.iteri (fun i (d: obj) ->
                         let dd : obj[] = d?data
-                        addNew (dd) (dd.Length) (arr.[i])
+                        addNew (dd) (dd.Length) arr
                     )
                     addNew labels (labels.Length) (label)
                     rendered.Update()
@@ -351,7 +351,7 @@ module Renderers =
                         let dd : obj[] = d?data
                         addNew (dd) (dd.Length) (polardata.Value)
                     )
-                    addNew labels (labels.Length) (a)
+                    addNew labels (labels.Length) polardata.Label
                     rendered.Update()
 
                 (chart :> IMutableChart<float, int>).OnUpdate <| fun (i, d) ->

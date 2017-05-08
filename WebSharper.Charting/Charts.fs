@@ -23,12 +23,14 @@ module Charts =
         { XAxis : string
           YAxis : string
           FillColor : Color
-          StrokeColor : Color }
+          StrokeColor : Color
+          IsFilled : bool }
     let internal defaultSeriesChartConfig =
         { XAxis = "x"
           YAxis = "y"
           FillColor = Color.Rgba(220, 220, 220, 0.2)
-          StrokeColor = Color.Rgba(220, 220, 220, 1.) }
+          StrokeColor = Color.Rgba(220, 220, 220, 1.)
+          IsFilled = true }
 
     type ColorConfig = 
         { PointColor : Color
@@ -109,6 +111,7 @@ module Charts =
         member x.UpdateData(data, props) = (x :> IMutableChart<float, int>).UpdateData(data, props)
 
         member x.DataSet = dataset
+        member x.WithFill(b) = LineChart(dataset, cfg, { scfg with IsFilled = b }, ccfg)
 
         interface IChart<LineChart> with
             override x.Config = cfg

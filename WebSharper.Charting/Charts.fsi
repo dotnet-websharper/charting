@@ -38,6 +38,7 @@ module Charts = begin
             YAxis: string
             FillColor: Pervasives.Color
             StrokeColor: Pervasives.Color
+            IsFilled: bool
         }
 
     /// <summary>Color configuration of a chart.</summary>
@@ -100,6 +101,7 @@ module Charts = begin
             /// <param name="props">Extra properties needed for updating (such as index).</param>
             /// <param name="update">The the function to update the data with. Receives the old value as parameter.</param>
             member UpdateData : props : int * update : (float -> float) -> unit
+            member WithFill: bool -> LineChart
             member WithFillColor : color:Pervasives.Color -> LineChart
             member WithPointColor : color:Pervasives.Color -> LineChart
             member WithPointHighlightFill : color:Pervasives.Color -> LineChart
