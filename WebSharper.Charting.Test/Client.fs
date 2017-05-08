@@ -25,9 +25,6 @@ module Client =
 #else
     let Main =
 #endif
-        let data = [ for x in 1.0 .. 9.0 -> (string x + "^2", x ** 2.0) ]
-
-        let chart = Chart.PolarArea(data)
 
         let ch1 = 
             Chart.Line([ for x in 1.0 .. 11.0 -> (string x, x) ])
@@ -270,7 +267,7 @@ module Client =
                 Window = 30
             )
             
-        let data = [for x in 1.0 .. 9.0 -> (string x, x * x)]
+        let data = [for x in 1.0 .. 9.0 -> (string x + "^2", x * x)]
         let chart =
             Chart.Line(data)
               .WithTitle("Square numbers")
