@@ -3,28 +3,29 @@
 open IntelliFactory.Build
 
 let bt =
-    BuildTool().PackageId("WebSharper.Charting")
-        .VersionFrom("WebSharper")
-        .WithFSharpVersion(FSharpVersion.FSharp30)
+    BuildTool().PackageId("Zafir.Charting")
+        .VersionFrom("Zafir")
         .WithFramework(fun fw -> fw.Net40)
 
 let main =
-    bt.WebSharper.Library("WebSharper.Charting")
+    bt.Zafir.Library("WebSharper.Charting")
         .SourcesFromProject()
+        .WithSourceMap()
         .References(fun r ->
             [ 
-                r.NuGet("WebSharper.ChartJs").ForceFoundVersion().Reference() 
-                r.NuGet("IntelliFactory.Reactive").ForceFoundVersion().Reference() 
-                r.NuGet("WebSharper.UI.Next").ForceFoundVersion().Reference()
+                r.NuGet("Zafir.ChartJs").Latest(true).ForceFoundVersion().Reference()
+                r.NuGet("Zafir.Reactive").Latest(true).ForceFoundVersion().Reference()
+                r.NuGet("Zafir.UI.Next").Latest(true).ForceFoundVersion().Reference()
             ])
 
 let test =
-    bt.WebSharper.Library("WebSharper.Charting.Test")
+    bt.Zafir.Library("WebSharper.Charting.Test")
+        .WithSourceMap()
         .References(fun r ->
             [ 
-                r.NuGet("WebSharper.ChartJs").Reference() 
-                r.NuGet("IntelliFactory.Reactive").Reference() 
-                r.NuGet("WebSharper.UI.Next").Reference()
+                r.NuGet("Zafir.ChartJS").Latest(true).ForceFoundVersion().Reference()
+                r.NuGet("Zafir.Reactive").Latest(true).ForceFoundVersion().Reference()
+                r.NuGet("Zafir.UI.Next").Latest(true).ForceFoundVersion().Reference()
                 r.Project main
             ])
 
@@ -35,10 +36,10 @@ bt.Solution [
     bt.NuGet.CreatePackage()
         .Configure(fun configuration ->
             { configuration with
-                Title = Some "WebSharper.Charting"
+                Title = Some "Zafir.Charting"
                 LicenseUrl = Some "http://websharper.com/licensing"
                 ProjectUrl = Some "https://github.com/intellifactory/websharper.charting"
-                Description = "Chart combinator-library for WebSharper"
+                Description = "Chart combinator-library for Zafir"
                 Authors = [ "IntelliFactory" ]
                 RequiresLicenseAcceptance = true })
         .Add(main)
