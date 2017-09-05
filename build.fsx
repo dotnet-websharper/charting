@@ -4,7 +4,7 @@ open IntelliFactory.Build
 
 let bt =
     BuildTool().PackageId("WebSharper.Charting")
-        .VersionFrom("WebSharper")
+        .VersionFrom("WebSharper", versionSpec = "(,4.0)")
         .WithFSharpVersion(FSharpVersion.FSharp30)
         .WithFramework(fun fw -> fw.Net40)
 
@@ -13,18 +13,18 @@ let main =
         .SourcesFromProject()
         .References(fun r ->
             [ 
-                r.NuGet("WebSharper.ChartJs").ForceFoundVersion().Reference() 
+                r.NuGet("WebSharper.ChartJs").Version("(,4.0)").ForceFoundVersion().Reference() 
                 r.NuGet("IntelliFactory.Reactive").ForceFoundVersion().Reference() 
-                r.NuGet("WebSharper.UI.Next").ForceFoundVersion().Reference()
+                r.NuGet("WebSharper.UI.Next").Version("(,4.0)").ForceFoundVersion().Reference()
             ])
 
 let test =
     bt.WebSharper.Library("WebSharper.Charting.Test")
         .References(fun r ->
             [ 
-                r.NuGet("WebSharper.ChartJs").Reference() 
+                r.NuGet("WebSharper.ChartJs").Version("(,4.0)").Reference() 
                 r.NuGet("IntelliFactory.Reactive").Reference() 
-                r.NuGet("WebSharper.UI.Next").Reference()
+                r.NuGet("WebSharper.UI.Next").Version("(,4.0)").Reference()
                 r.Project main
             ])
 
