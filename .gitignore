@@ -7,3 +7,9 @@ build/
 tools/packages/
 **/Content/
 **/Scripts/
+
+bin/
+obj/
+/.fake/
+/paket-files/
+/.vscode/
