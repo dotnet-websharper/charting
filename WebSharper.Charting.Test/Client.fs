@@ -4,8 +4,8 @@ open WebSharper
 open WebSharper.JavaScript
 open WebSharper.Charting
 open IntelliFactory.Reactive
-open WebSharper.UI.Next.Html
-open WebSharper.UI.Next.Client
+open WebSharper.UI.Html
+open WebSharper.UI.Client
 
 [<Interface>]
 type IChart<'Self when 'Self :> IChart<'Self>> =
@@ -17,14 +17,10 @@ type EmptyChart(title : string) =
 
 [<JavaScript>]
 module Client =
-    open WebSharper.UI.Next
+    open WebSharper.UI
 
-#if ZAFIR
     [<SPAEntryPoint>]
     let Main() =
-#else
-    let Main =
-#endif
 
         let ch1 = 
             Chart.Line([ for x in 1.0 .. 11.0 -> (string x, x) ])
@@ -275,7 +271,7 @@ module Client =
         let blueLine = chart.WithStrokeColor(Color.Name "blue")
         let redLine = chart.WithStrokeColor(Color.Name "red")
 
-        div [
+        div [] [
             chart |> Renderers.ChartJs.Render
             cr
             crs
@@ -285,14 +281,11 @@ module Client =
             renderedPolar
             Renderers.ChartJs.Render(blueLine, Size = Size(300, 200))
             Renderers.ChartJs.Render(redLine, Size = Size(300, 200))
-            hr []
-            div [text "Live Charts"]
+            hr [] []
+            div [] [text "Live Charts"]
             lc
             Renderers.ChartJs.Render(combinedLive, Window = 30)
             withoutLabel
         ]
         
         |> Doc.RunById "entry"
-            
-        
-        

@@ -6,8 +6,8 @@ open WebSharper
 [<JavaScript>]
 module Renderers =
     open WebSharper.JavaScript
-    open WebSharper.UI.Next.Html
-    open WebSharper.UI.Next.Client
+    open WebSharper.UI.Html
+    open WebSharper.UI.Client
 
     open IntelliFactory.Reactive
 
@@ -62,13 +62,13 @@ module Renderers =
 
         let private withNewCanvas (size : Size) k =
             let (Size (width, height)) = size
-            divAttr [
+            div [
                 attr.width <| string width
                 attr.height <| string height
                 Attr.Style "width" (string width + "px")
                 Attr.Style "height" (string height + "px")
             ] [
-                canvasAttr [ 
+                canvas [ 
                     on.afterRender <| fun el ->
                         let ctx = (As<CanvasElement> el).GetContext("2d")
                         (el :?> CanvasElement).Width <- width
