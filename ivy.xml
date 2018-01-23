@@ -2,7 +2,7 @@
   <info organisation="IntelliFactory" module="zafir.charting" revision="3.0" />
   <dependencies>
     <dependency name="zafir" rev="latest.integration" />
-    <dependency name="zafir.ui.next" rev="latest.integration" />
+    <dependency name="zafir.ui" rev="latest.integration" />
     <dependency name="zafir.chartjs" rev="latest.integration" />
     <dependency name="zafir.reactive" rev="latest.integration" />
   </dependencies>
