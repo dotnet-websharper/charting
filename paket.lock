@@ -593,7 +593,7 @@ NUGET
       WebSharper (4.5.0.290)
     WebSharper.Reactive (4.5.0.128)
       WebSharper (>= 4.5 < 4.6)
-    WebSharper.UI (4.5.0.139)
+    WebSharper.UI (4.5.0.140)
       HtmlAgilityPack (>= 1.7.1)
       System.Xml.XDocument (>= 4.3)
       WebSharper (>= 4.5 < 4.6)
