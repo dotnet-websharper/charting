@@ -2,6 +2,7 @@ version 5.173.1
 source https://api.nuget.org/v3/index.json
 source https://daily.websharper.com/nuget
 
+framework: net461, netstandard2.0
 storage: none
 
 nuget WebSharper prerelease
@@ -10,6 +11,7 @@ nuget WebSharper.ChartJs prerelease
 nuget WebSharper.Reactive prerelease
 nuget WebSharper.UI prerelease
 nuget WebSharper.ChartJS prerelease
+nuget FSharp.Core ~> 4.2.0
 
 group build
     framework: net45
