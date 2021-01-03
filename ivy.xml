@@ -1,9 +1,9 @@
 <ivy-module version="2.0">
-  <info organisation="IntelliFactory" module="zafir.charting" revision="3.0" />
+  <info organisation="IntelliFactory" module="ws5.charting" revision="3.0" />
   <dependencies>
-    <dependency name="zafir" rev="latest.integration" />
-    <dependency name="zafir.ui" rev="latest.integration" />
-    <dependency name="zafir.chartjs" rev="latest.integration" />
-    <dependency name="zafir.reactive" rev="latest.integration" />
+    <dependency name="ws5" rev="latest.integration" />
+    <dependency name="ws5.ui" rev="latest.integration" />
+    <dependency name="ws5.chartjs" rev="latest.integration" />
+    <dependency name="ws5.reactive" rev="latest.integration" />
   </dependencies>
 </ivy-module>
