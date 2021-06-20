@@ -10,8 +10,8 @@ nuget WebSharper.FSharp ~> 4.7
 nuget WebSharper.ChartJs ~> 4.7
 nuget WebSharper.Reactive ~> 4.7
 nuget WebSharper.UI ~> 4.7
-nuget FSharp.Core 4.2.3
-nuget HtmlAgilityPack 1.7.1
+nuget WebSharper.ChartJS ~> 4.7
+nuget FSharp.Core ~> 4.2.0
 
 group wsbuild
     git https://github.com/dotnet-websharper/build-script dotnettool
