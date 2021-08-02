@@ -45,12 +45,12 @@ module Pervasives =
         <| fun (a, b) -> (string a, b)
 
     let internal withIndex s =
-        Seq.zip (Seq.initInfinite <| fun i -> string i) s
+        Seq.zip (Seq.initInfinite string) s
 
     module internal Seq =
         let headOption s =
             if Seq.isEmpty s then None
-            else Some <| Seq.nth 0 s
+            else Some <| Seq.item 0 s
 
     module internal Reactive =
         let rec private sequence acc = function

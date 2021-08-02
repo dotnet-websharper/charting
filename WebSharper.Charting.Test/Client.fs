@@ -55,9 +55,7 @@ module Client =
                 ch2
             ]
             |> Chart.Combine
-            |> fun e -> 
-                let c = ChartJs.CommonChartConfig()
-                Renderers.ChartJs.Render(e, Config = c)
+            |> Renderers.ChartJs.Render
 
         let pie =
             let data =
@@ -79,8 +77,7 @@ module Client =
                 .WithTitle "Pie example"
         
         let renderedPie =
-            let c = ChartJs.CommonChartConfig()
-            Renderers.ChartJs.Render(pie, Config = c)
+            Renderers.ChartJs.Render(pie)
 
         let doughnut =
             let data =
@@ -108,8 +105,7 @@ module Client =
                 
         
         let renderedDoughnut =
-            let c = ChartJs.CommonChartConfig()
-            Renderers.ChartJs.Render(doughnut, Config = c)
+            Renderers.ChartJs.Render(doughnut)
 
         let polar = 
             let data =
@@ -142,8 +138,7 @@ module Client =
             Chart.PolarArea(data)
 
         let renderedPolar =
-            let c = ChartJs.CommonChartConfig()
-            Renderers.ChartJs.Render(polar, Config = c)
+            Renderers.ChartJs.Render(polar)
 
         let stream1 = Event<string * float>()
         let stream2 = Event<string * float>()

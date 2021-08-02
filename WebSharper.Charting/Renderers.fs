@@ -44,9 +44,9 @@ module Renderers =
     let pushTo (ds: obj []) v = X<unit>
 
     type internal PolarChartType =
-        | PolarArea of ChartJs.CommonChartConfig
-        | Pie of ChartJs.CommonChartConfig
-        | Doughnut of ChartJs.CommonChartConfig
+        | PolarArea of ChartJs.PolarAreaChartOptions
+        | Pie of ChartJs.PieDoughnutChartOptions
+        | Doughnut of ChartJs.PieDoughnutChartOptions
 
     module internal ChartJsInternal =
         type private BatchUpdater(?interval : int, ?maxCount : int) =
@@ -123,29 +123,33 @@ module Renderers =
                 let initial = mkInitial chart.DataSet window 
                 let data =
                     ChartJs.ChartData(
-                            [| ChartJs.LineChartDataSet(
-                                Label = chart.Config.Title,
-                                Fill = chart.SeriesConfig.IsFilled,
-                                BackgroundColor = string chart.SeriesConfig.FillColor,
-                                BorderColor = (string chart.SeriesConfig.StrokeColor),
-                                PointBackgroundColor = Union1Of2(string chart.ColorConfig.PointColor),
-                                PointHoverBackgroundColor = Union1Of2(string chart.ColorConfig.PointHighlightFill),
-                                PointHoverBorderColor = Union1Of2(string chart.ColorConfig.PointHighlightStroke),
-                                PointBorderColor = Union1Of2(string chart.ColorConfig.PointStrokeColor),
-                                Data = (initial |> Array.map snd)) 
-                            |])
+                            Datasets =
+                                [| ChartJs.LineChartDataSet(
+                                    Label = chart.Config.Title,
+                                    Fill = Union1Of2 chart.SeriesConfig.IsFilled,
+                                    BackgroundColor = Union1Of2 (string chart.SeriesConfig.FillColor),
+                                    BorderColor = Union1Of2 (string chart.SeriesConfig.StrokeColor),
+                                    PointBackgroundColor = Union1Of2(string chart.ColorConfig.PointColor),
+                                    PointHoverBackgroundColor = Union1Of2(string chart.ColorConfig.PointHighlightFill),
+                                    PointHoverBorderColor = Union1Of2(string chart.ColorConfig.PointHighlightStroke),
+                                    PointBorderColor = Union1Of2(string chart.ColorConfig.PointStrokeColor),
+                                    Data = (initial |> Array.map snd)) 
+                                |]
+                    )
 
                 data.Labels <- (initial |> Array.map fst)
 
                 let options =
                     defaultArg
                     <| cfg
-                    <| ChartJs.CommonChartConfig()
+                    <| ChartJs.Options()
+
+                // options.
 
                 let chartcreate =
-                    ChartJs.ChartCreate("line", data, options)
+                    ChartJs.ChartCreate(data, options)
 
-                let rendered = ChartJs.Chart.Line(canvas, chartcreate)
+                let rendered = ChartJs.Chart(canvas, chartcreate)
 
                 registerUpdater (chart :> IMutableChart<float, int>)
                 <| fun (i, d) ->
@@ -184,21 +188,23 @@ module Renderers =
 
                 let data =
                     ChartJs.ChartData(
-                            [| ChartJs.BarChartDataSet(
-                                Label = chart.Config.Title,
-                                BackgroundColor = (string chart.SeriesConfig.FillColor),
-                                BorderColor = (string chart.SeriesConfig.StrokeColor),
-                                Data = (initial |> Array.map snd))
-                            |])
+                            Datasets =
+                                [| ChartJs.BarChartDataSet(
+                                    Label = chart.Config.Title,
+                                    BackgroundColor = Union1Of2 (string chart.SeriesConfig.FillColor),
+                                    BorderColor = Union1Of2 (string chart.SeriesConfig.StrokeColor),
+                                    Data = (initial |> Array.map snd))
+                                |]
+                    )
                 data.Labels <- (initial |> Array.map fst)
 
                 let options =
                     defaultArg
                     <| cfg
-                    <| ChartJs.CommonChartConfig()
+                    <| ChartJs.Options()
 
                 let chartcreate =
-                    ChartJs.ChartCreate("bar", data, options)
+                    ChartJs.ChartCreate(data, options)
 
                 let rendered = ChartJs.Chart(canvas, chartcreate)
 
@@ -239,26 +245,29 @@ module Renderers =
 
                 let data =
                     ChartJs.ChartData(
-                            [| ChartJs.RadarChartDataSet(
-                                Label = chart.Config.Title,
-                                BackgroundColor = (string chart.SeriesConfig.FillColor),
-                                BorderColor = (string chart.SeriesConfig.StrokeColor),
-                                PointBackgroundColor = Union1Of2(string chart.ColorConfig.PointColor),
-                                PointHoverBackgroundColor = Union1Of2(string chart.ColorConfig.PointHighlightFill),
-                                PointHoverBorderColor = Union1Of2(string chart.ColorConfig.PointHighlightStroke),
-                                PointBorderColor = Union1Of2(string chart.ColorConfig.PointStrokeColor),
-                                Data = (initial |> Array.map snd)) 
-                            |])
+                            Datasets =
+                                [| ChartJs.RadarChartDataSet(
+                                    Label = chart.Config.Title,
+                                    Fill = Union1Of2 chart.SeriesConfig.IsFilled,
+                                    BackgroundColor = Union1Of2 (string chart.SeriesConfig.FillColor),
+                                    BorderColor = Union1Of2 (string chart.SeriesConfig.StrokeColor),
+                                    PointBackgroundColor = Union1Of2(string chart.ColorConfig.PointColor),
+                                    PointHoverBackgroundColor = Union1Of2(string chart.ColorConfig.PointHighlightFill),
+                                    PointHoverBorderColor = Union1Of2(string chart.ColorConfig.PointHighlightStroke),
+                                    PointBorderColor = Union1Of2(string chart.ColorConfig.PointStrokeColor),
+                                    Data = (initial |> Array.map snd)) 
+                                |]
+                    )
 
                 data.Labels <- (initial |> Array.map fst)
 
                 let options =
                     defaultArg
                     <| cfg
-                    <| ChartJs.CommonChartConfig()
+                    <| ChartJs.RadarChartOptions()
                 
                 let chartcreate =
-                    ChartJs.ChartCreate("radar", data, options)
+                    ChartJs.ChartCreate(data, options)
 
                 let rendered = ChartJs.Chart(canvas, chartcreate)
 
@@ -313,40 +322,43 @@ module Renderers =
                     | PolarChartType.PolarArea opts ->
                         let x =
                             ChartJs.ChartData (
-                                [|
-                                    ChartJs.PolarChartDataSet(
-                                        Data = toValue,
-                                        BackgroundColor = toBGColor,
-                                        HoverBackgroundColor = toHBGColor
-                                    )
-                                |]
+                                Datasets =
+                                    [|
+                                        ChartJs.PolarAreaChartDataSet(
+                                            Data = toValue,
+                                            BackgroundColor = Union2Of2 toBGColor,
+                                            HoverBackgroundColor = Union2Of2 toHBGColor
+                                        )
+                                    |]
                             )
                         x.Labels <- toLabel
-                        ChartJs.ChartCreate("polarArea", x, opts)
+                        ChartJs.ChartCreate(x, opts)
                     | PolarChartType.Pie opt ->
                         let x =
                             ChartJs.ChartData(
-                                [|
-                                ChartJs.PieChartDataSet(
-                                    Data = toValue,
-                                    BackgroundColor = toBGColor,
-                                    HoverBackgroundColor = toHBGColor)
-                                |]
+                                Datasets =
+                                    [|
+                                        ChartJs.PieChartDataSet(
+                                            Data = toValue,
+                                            BackgroundColor = Union2Of2 toBGColor,
+                                            HoverBackgroundColor = Union2Of2 toHBGColor)
+                                    |]
                             )
                         x.Labels <- toLabel
-                        ChartJs.ChartCreate("pie", x, opt)
+                        ChartJs.ChartCreate(x, opt)
                     | PolarChartType.Doughnut opt ->
                         let x =
                             ChartJs.ChartData(
-                                [|
-                                    ChartJs.DoughnutChartDataSet(
-                                        Data = toValue,
-                                        BackgroundColor = toBGColor,
-                                        HoverBackgroundColor = toHBGColor)
-                                |]
+                                Datasets =
+                                    [|
+                                        ChartJs.DoughnutChartDataSet(
+                                            Data = toValue,
+                                            BackgroundColor = Union2Of2 toBGColor,
+                                            HoverBackgroundColor = Union2Of2 toHBGColor)
+                                    |]
                             )
                         x.Labels <- toLabel
-                        ChartJs.ChartCreate("doughnut", x, opt)
+                        ChartJs.ChartCreate(x, opt)
 
                 let rendered = ChartJs.Chart(canvas, cc)
                         
@@ -417,21 +429,23 @@ module Renderers =
                         else Seq.empty
 
                 let data =
-                    ChartJs.ChartData( 
-                        (chart.Charts
-                        |> Seq.map (fun chart ->
-                            let initials = mkInitial chart.DataSet window
-                            ChartJs.LineChartDataSet(
-                                Label = chart.Config.Title,
-                                BackgroundColor = (string chart.SeriesConfig.FillColor),
-                                BorderColor = (string chart.SeriesConfig.StrokeColor),
-                                PointBackgroundColor = Union1Of2(string chart.ColorConfig.PointColor),
-                                PointHoverBackgroundColor = Union1Of2(string chart.ColorConfig.PointHighlightFill),
-                                PointHoverBorderColor = Union1Of2(string chart.ColorConfig.PointHighlightStroke),
-                                PointBorderColor = Union1Of2(string chart.ColorConfig.PointStrokeColor),
-                                Data = (initials |> Array.map snd)) :> ChartJs.ADataSet
-                        )
-                        |> Seq.toArray)
+                    ChartJs.ChartData(
+                        Datasets =
+                            (chart.Charts
+                            |> Seq.map (fun chart ->
+                                let initials = mkInitial chart.DataSet window
+                                ChartJs.LineChartDataSet(
+                                    Label = chart.Config.Title,
+                                    Fill = Union1Of2 chart.SeriesConfig.IsFilled,
+                                    BackgroundColor = Union1Of2 (string chart.SeriesConfig.FillColor),
+                                    BorderColor = Union1Of2 (string chart.SeriesConfig.StrokeColor),
+                                    PointBackgroundColor = Union1Of2(string chart.ColorConfig.PointColor),
+                                    PointHoverBackgroundColor = Union1Of2(string chart.ColorConfig.PointHighlightFill),
+                                    PointHoverBorderColor = Union1Of2(string chart.ColorConfig.PointHighlightStroke),
+                                    PointBorderColor = Union1Of2(string chart.ColorConfig.PointStrokeColor),
+                                    Data = (initials |> Array.map snd)) :> ChartJs.ADataSet
+                            )
+                            |> Seq.toArray)
                     )
 
                 data.Labels <- (labels |> Seq.toArray)
@@ -439,13 +453,13 @@ module Renderers =
                 let options =
                     defaultArg
                     <| cfg
-                    <| ChartJs.CommonChartConfig()
+                    <| ChartJs.Options()
 
                 let chartcreate =
-                    ChartJs.ChartCreate("line", data, options)
+                    ChartJs.ChartCreate(data, options)
                 
                 let rendered = 
-                    ChartJs.Chart.Line(canvas, chartcreate)
+                    ChartJs.Chart(canvas, chartcreate)
 
                 chart.Charts
                 |> Seq.iteri (fun i chart ->
@@ -501,13 +515,14 @@ module Renderers =
 
                 let data =
                     ChartJs.ChartData(
+                        Datasets =
                             (chart.Charts
                             |> Seq.map (fun chart ->
                                 let initials = mkInitial chart.DataSet window
                                 ChartJs.BarChartDataSet(
                                     Label = chart.Config.Title,
-                                    BackgroundColor = (string chart.SeriesConfig.FillColor),
-                                    BorderColor = (string chart.SeriesConfig.StrokeColor),
+                                    BackgroundColor = Union1Of2 (string chart.SeriesConfig.FillColor),
+                                    BorderColor = Union1Of2 (string chart.SeriesConfig.StrokeColor),
                                     Data = (initials |> Array.map snd)) :> ChartJs.ADataSet 
                             )
                             |> Seq.toArray)
@@ -518,10 +533,10 @@ module Renderers =
                 let options =
                     defaultArg
                     <| cfg
-                    <| ChartJs.CommonChartConfig()
+                    <| ChartJs.Options()
 
                 let chartcreate =
-                    ChartJs.ChartCreate("bar", data, options)
+                    ChartJs.ChartCreate(data, options)
 
                 let rendered = 
                     ChartJs.Chart(canvas, chartcreate)
@@ -580,13 +595,15 @@ module Renderers =
 
                 let data =
                     ChartJs.ChartData(
+                        Datasets =
                             (chart.Charts
                             |> Seq.map (fun chart ->
                                 let initials = mkInitial chart.DataSet window
                                 ChartJs.RadarChartDataSet(
                                     Label = chart.Config.Title,
-                                    BackgroundColor = (string chart.SeriesConfig.FillColor),
-                                    BorderColor = (string chart.SeriesConfig.StrokeColor),
+                                    Fill = Union1Of2 chart.SeriesConfig.IsFilled,
+                                    BackgroundColor = Union1Of2 (string chart.SeriesConfig.FillColor),
+                                    BorderColor = Union1Of2 (string chart.SeriesConfig.StrokeColor),
                                     PointBackgroundColor = Union1Of2(string chart.ColorConfig.PointColor),
                                     PointHoverBackgroundColor = Union1Of2(string chart.ColorConfig.PointHighlightFill),
                                     PointHoverBorderColor = Union1Of2(string chart.ColorConfig.PointHighlightStroke),
@@ -601,10 +618,10 @@ module Renderers =
                 let options =
                     defaultArg
                     <| cfg
-                    <| ChartJs.CommonChartConfig()
+                    <| ChartJs.RadarChartOptions()
 
                 let chartcreate =
-                    ChartJs.ChartCreate("radar", data, options)
+                    ChartJs.ChartCreate(data, options)
 
                 let rendered = 
                     ChartJs.Chart(canvas, chartcreate)
@@ -652,58 +669,58 @@ module Renderers =
     type ChartJs =
         static member Render(chart : Charts.LineChart,
                              ?Size : Size,
-                             ?Config : ChartJs.CommonChartConfig,
+                             ?Config : ChartJs.Options,
                              ?Window : int) =
             ChartJsInternal.RenderLineChart chart (defaultArg Size defaultSize) Config Window
 
         static member Render(chart : Charts.BarChart,
                              ?Size : Size,
-                             ?Config : ChartJs.CommonChartConfig,
+                             ?Config : ChartJs.Options,
                              ?Window : int) =
             ChartJsInternal.RenderBarChart chart (defaultArg Size defaultSize) Config Window
 
         static member Render(chart : Charts.RadarChart,
                              ?Size : Size,
-                             ?Config : ChartJs.CommonChartConfig,
+                             ?Config : ChartJs.RadarChartOptions,
                              ?Window : int) =
             ChartJsInternal.RenderRadarChart chart (defaultArg Size defaultSize) Config Window
 
         static member Render(chart : Charts.PieChart,
                              ?Size : Size,
-                             ?Config : ChartJs.CommonChartConfig,
+                             ?Config : ChartJs.PieDoughnutChartOptions,
                              ?Window : int) =
-            let typ = PolarChartType.Pie <| defaultArg Config (ChartJs.CommonChartConfig())
+            let typ = PolarChartType.Pie <| defaultArg Config (ChartJs.PieDoughnutChartOptions())
             ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
 
         static member Render(chart : Charts.DoughnutChart,
                              ?Size : Size,
-                             ?Config : ChartJs.CommonChartConfig,
+                             ?Config : ChartJs.PieDoughnutChartOptions,
                              ?Window : int) =
-            let typ = PolarChartType.Doughnut <| defaultArg Config (ChartJs.CommonChartConfig())
+            let typ = PolarChartType.Doughnut <| defaultArg Config (ChartJs.PieDoughnutChartOptions())
             ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
 
         static member Render(chart : Charts.PolarAreaChart,
                              ?Size : Size,
-                             ?Config : ChartJs.CommonChartConfig,
+                             ?Config : ChartJs.PolarAreaChartOptions,
                              ?Window : int) =
-            let typ = PolarChartType.PolarArea <| defaultArg Config (ChartJs.CommonChartConfig())
+            let typ = PolarChartType.PolarArea <| defaultArg Config (ChartJs.PolarAreaChartOptions())
             ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
 
         static member Render(chart : Charts.CompositeChart<LineChart>,
                              ?Size : Size,
-                             ?Config : ChartJs.CommonChartConfig,
+                             ?Config : ChartJs.Options,
                              ?Window : int) =
             ChartJsInternal.RenderCombinedLineChart chart (defaultArg Size defaultSize) Config Window
 
         static member Render(chart : Charts.CompositeChart<BarChart>,
                              ?Size : Size,
-                             ?Config : ChartJs.CommonChartConfig,
+                             ?Config : ChartJs.Options,
                              ?Window : int) =
             ChartJsInternal.RenderCombinedBarChart chart (defaultArg Size defaultSize) Config Window
 
         static member Render(chart : Charts.CompositeChart<RadarChart>,
                              ?Size : Size,
-                             ?Config : ChartJs.CommonChartConfig,
+                             ?Config : ChartJs.RadarChartOptions,
                              ?Window : int) =
             ChartJsInternal.RenderCombinedRadarChart chart (defaultArg Size defaultSize) Config Window
 
