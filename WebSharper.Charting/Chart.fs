@@ -20,7 +20,6 @@
 namespace WebSharper.Charting
 
 open WebSharper
-open IntelliFactory.Reactive
 
 [<JavaScript>]
 type Chart =

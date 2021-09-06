@@ -1,22 +1,20 @@
 type file
 id WebSharper.Charting
-authors
-    IntelliFactory
-owners
-    IntelliFactory
-licenseUrl http://websharper.com/licensing
-projectUrl https://github.com/intellifactory/websharper.charting
+authors IntelliFactory
+owners IntelliFactory
+projectUrl https://websharper.com/
+repositoryType git
+repositoryUrl https://github.com/dotnet-websharper/charting/
+licenseUrl https://github.com/dotnet-websharper/charting/blob/master/LICENSE.md
+licenseExpression Apache-2.0
+iconUrl https://github.com/dotnet-websharper/core/raw/websharper50/tools/WebSharper.png
 description
     Chart combinator-library for WebSharper
 tags
     Web JavaScript F# C#
 files
-    ../WebSharper.Charting/bin/Release/net461/WebSharper.Charting.dll ==> lib/net461
-    ../WebSharper.Charting/bin/Release/net461/WebSharper.Charting.xml ==> lib/net461
     ../WebSharper.Charting/bin/Release/netstandard2.0/WebSharper.Charting.dll ==> lib/netstandard2.0
     ../WebSharper.Charting/bin/Release/netstandard2.0/WebSharper.Charting.xml ==> lib/netstandard2.0
 dependencies
-        WebSharper ~> LOCKEDVERSION:[3]
-        WebSharper.ChartJs ~> LOCKEDVERSION:[3]
-        WebSharper.Reactive ~> LOCKEDVERSION:[3]
-        WebSharper.UI ~> LOCKEDVERSION:[3]
+    framework: netstandard2.0
+            WebSharper ~> LOCKEDVERSION:[3]

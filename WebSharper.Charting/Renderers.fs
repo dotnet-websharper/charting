@@ -28,8 +28,6 @@ module Renderers =
     open WebSharper.UI.Html
     open WebSharper.UI.Client
 
-    open IntelliFactory.Reactive
-
     open Charts
 
     let private defaultSize = Pervasives.Size(500, 200)

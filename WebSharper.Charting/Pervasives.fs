@@ -20,7 +20,6 @@
 namespace WebSharper.Charting
 
 open WebSharper
-open IntelliFactory.Reactive
 
 [<AutoOpen; JavaScript>]
 module Pervasives =

@@ -21,7 +21,6 @@ namespace WebSharper.Charting
 
 open System
 open WebSharper
-open IntelliFactory.Reactive
 
 [<JavaScript>]
 module Charts =

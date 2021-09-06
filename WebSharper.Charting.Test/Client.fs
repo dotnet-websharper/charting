@@ -22,7 +22,6 @@ namespace WebSharper.Charting.Test
 open WebSharper
 open WebSharper.JavaScript
 open WebSharper.Charting
-open IntelliFactory.Reactive
 open WebSharper.UI.Html
 open WebSharper.UI.Client
 
