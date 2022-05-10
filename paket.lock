@@ -3,7 +3,7 @@ STRATEGY: MIN
 RESTRICTION: || (== net5.0) (== netcoreapp2.1) (== netcoreapp3.1) (== netstandard2.0)
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    FSharp.Core (6.0.3)
+    FSharp.Core (6.0.4)
     HtmlAgilityPack (1.11)
       System.Net.Http (>= 4.3.2)
       System.Xml.XmlDocument (>= 4.3)
@@ -361,16 +361,16 @@ NUGET
       System.Xml.XmlDocument (>= 4.3)
       System.Xml.XPath (>= 4.3)
   remote: https://nuget.pkg.github.com/dotnet-websharper/index.json
-    WebSharper (6.0.0.192)
+    WebSharper (6.0.0.198)
       FSharp.Core (>= 6.0.3)
       System.Reflection.Emit.Lightweight (>= 4.7)
-    WebSharper.ChartJs (6.0.0.192)
+    WebSharper.ChartJs (6.0.0.198)
       WebSharper (>= 6.0 < 6.1)
-    WebSharper.FSharp (6.0.0.192)
-      WebSharper (6.0.0.192)
-    WebSharper.JQuery (6.0.0.192)
+    WebSharper.FSharp (6.0.0.198)
+      WebSharper (6.0.0.198)
+    WebSharper.JQuery (6.0.0.198)
       WebSharper (>= 6.0 < 6.1)
-    WebSharper.UI (6.0.0.192)
+    WebSharper.UI (6.0.0.198)
       HtmlAgilityPack (>= 1.11)
       WebSharper (>= 6.0 < 6.1)
 
