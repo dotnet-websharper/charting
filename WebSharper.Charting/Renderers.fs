@@ -46,6 +46,34 @@ module Renderers =
         | Pie of ChartJs.PieDoughnutChartOptions
         | Doughnut of ChartJs.PieDoughnutChartOptions
 
+    let internal withNewCanvas (size : Size) k =
+        let (Size (width, height)) = size
+        div [
+            attr.width <| string width
+            attr.height <| string height
+            Attr.Style "width" (string width + "px")
+            Attr.Style "height" (string height + "px")
+        ] [
+            canvas [ 
+                on.afterRender <| fun el ->
+                    let ctx = (As<CanvasElement> el).GetContext("2d")
+                    (el :?> CanvasElement).Width <- width
+                    (el :?> CanvasElement).Height <- height
+                    k el ctx
+            ] []
+        ]
+
+    let internal withNewDiv (size : Size) k =
+        let (Size (width, height)) = size
+        div [
+            attr.width <| string width
+            attr.height <| string height
+            Attr.Style "width" (string width + "px")
+            Attr.Style "height" (string height + "px")
+            on.afterRender <| fun el ->
+                k el
+        ] []
+
     module internal ChartJsInternal =
         type private BatchUpdater(?interval : int, ?maxCount : int) =
             let interval = defaultArg interval 75
@@ -76,23 +104,6 @@ module Renderers =
             mChart.OnUpdate <| fun (i, d) ->
                 upd(i,d)
                 bu.Update fin
-
-        let private withNewCanvas (size : Size) k =
-            let (Size (width, height)) = size
-            div [
-                attr.width <| string width
-                attr.height <| string height
-                Attr.Style "width" (string width + "px")
-                Attr.Style "height" (string height + "px")
-            ] [
-                canvas [ 
-                    on.afterRender <| fun el ->
-                        let ctx = (As<CanvasElement> el).GetContext("2d")
-                        (el :?> CanvasElement).Width <- width
-                        (el :?> CanvasElement).Height <- height
-                        k el ctx
-                ] []
-            ]
 
         let private mkInitial dataSet window =
             match dataSet with
@@ -722,3 +733,114 @@ module Renderers =
                              ?Window : int) =
             ChartJsInternal.RenderCombinedRadarChart chart (defaultArg Size defaultSize) Config Window
 
+
+    open WebSharper.Plotly
+    //open WebSharper.Core
+
+    //[<Sealed>]
+    //type NotSupportedMacro() =
+
+    //    //let stringT = { Generics = []; Entity = typeof<string> } : AST.Concrete<string>
+
+    //    inherit Macro()
+
+    //    override __.TranslateCall(c: MacroCall) =
+    //        match c.Arguments, c.Method.Entity.Value.Parameters with
+    //        | [arg1; arg2], [AST.Type.ConcreteType string; AST.Type.ConcreteType x] when string.Entity.Value.FullName = "System.String" ->
+    //            if arg1. arg1 then
+    //                c.Compilation.AddWarning (None, "")
+    //            MacroOk AST.Expression.Undefined
+    //        | _ -> MacroError "Not valid usage of NotSupportedMacro"
+
+    type Plotly =
+        static member Render(chart : Charts.LineChart,
+                ?Size : Size,
+                ?Config : Plotly.Options,
+                ?Window : int) =
+            let options =
+                let data =
+                    match chart.DataSet with
+                    | DataType.Live l -> [||]
+                    | DataType.Static s -> 
+                        Window
+                        |> Option.fold (fun s w ->
+                            let skp = s.Length - w
+                            if skp >= s.Length then [||]
+                            elif skp <= 0 then s
+                            else s.[skp..]
+                        ) (Seq.toArray s)
+                let options = ScatterOptions()
+                options.X <- data |> Array.map fst
+                options.Y <- data |> Array.map snd
+                options.Name <- chart.Config.Title
+                if chart.SeriesConfig.IsFilled then
+                    options.Fill <- Fill.Tozeroy
+                    options.Fillcolor <- string chart.SeriesConfig.FillColor
+                options.Line <-
+                    ScatterLine(Color = string chart.SeriesConfig.StrokeColor)
+
+                options.Marker <-
+                    ScatterMarker(
+                        Color = string chart.ColorConfig.PointColor,
+                        Line = ScatterMarkerLine(Color = string chart.ColorConfig.PointStrokeColor)
+                    )
+                [| options |]
+            withNewDiv (defaultArg Size defaultSize) <| fun el ->
+                let el = el :?> HTMLElement
+                let layout = Layout()
+                layout.Xaxis <- LayoutXAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.XAxis))
+                layout.Yaxis <- LayoutYAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.YAxis))
+                Plotly.NewPlot(el, options, layout, defaultArg Config <| Plotly.Options()) |> ignore
+
+
+        static member Render(chart : Charts.BarChart,
+                 ?Size : Size,
+                 ?Config : ChartJs.Options,
+                 ?Window : int) =
+            ChartJsInternal.RenderBarChart chart (defaultArg Size defaultSize) Config Window
+
+        static member Render(chart : Charts.RadarChart,
+                 ?Size : Size,
+                 ?Config : ChartJs.RadarChartOptions,
+                 ?Window : int) =
+            ChartJsInternal.RenderRadarChart chart (defaultArg Size defaultSize) Config Window
+
+        static member Render(chart : Charts.PieChart,
+                 ?Size : Size,
+                 ?Config : ChartJs.PieDoughnutChartOptions,
+                 ?Window : int) =
+            let typ = PolarChartType.Pie <| defaultArg Config (ChartJs.PieDoughnutChartOptions())
+            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
+
+        static member Render(chart : Charts.DoughnutChart,
+                 ?Size : Size,
+                 ?Config : ChartJs.PieDoughnutChartOptions,
+                 ?Window : int) =
+            let typ = PolarChartType.Doughnut <| defaultArg Config (ChartJs.PieDoughnutChartOptions())
+            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
+
+        static member Render(chart : Charts.PolarAreaChart,
+                 ?Size : Size,
+                 ?Config : ChartJs.PolarAreaChartOptions,
+                 ?Window : int) =
+            let typ = PolarChartType.PolarArea <| defaultArg Config (ChartJs.PolarAreaChartOptions())
+            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
+
+        static member Render(chart : Charts.CompositeChart<LineChart>,
+                 ?Size : Size,
+                 ?Config : ChartJs.Options,
+                 ?Window : int) =
+            ChartJsInternal.RenderCombinedLineChart chart (defaultArg Size defaultSize) Config Window
+
+        static member Render(chart : Charts.CompositeChart<BarChart>,
+                 ?Size : Size,
+                 ?Config : ChartJs.Options,
+                 ?Window : int) =
+            ChartJsInternal.RenderCombinedBarChart chart (defaultArg Size defaultSize) Config Window
+
+        static member Render(chart : Charts.CompositeChart<RadarChart>,
+                 ?Size : Size,
+                 ?Config : ChartJs.RadarChartOptions,
+                 ?Window : int) =
+            ChartJsInternal.RenderCombinedRadarChart chart (defaultArg Size defaultSize) Config Window
+                
