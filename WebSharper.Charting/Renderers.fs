@@ -63,13 +63,8 @@ module Renderers =
             ] []
         ]
 
-    let internal withNewDiv (size : Size) k =
-        let (Size (width, height)) = size
+    let internal withNewDiv k =
         div [
-            attr.width <| string width
-            attr.height <| string height
-            Attr.Style "width" (string width + "px")
-            Attr.Style "height" (string height + "px")
             on.afterRender <| fun el ->
                 k el
         ] []
@@ -754,7 +749,6 @@ module Renderers =
 
     type Plotly =
         static member Render(chart : Charts.LineChart,
-                ?Size : Size,
                 ?Config : Plotly.Options,
                 ?Window : int) =
             let options =
@@ -784,63 +778,418 @@ module Renderers =
                         Color = string chart.ColorConfig.PointColor,
                         Line = ScatterMarkerLine(Color = string chart.ColorConfig.PointStrokeColor)
                     )
+
                 [| options |]
-            withNewDiv (defaultArg Size defaultSize) <| fun el ->
+            withNewDiv <| fun el ->
                 let el = el :?> HTMLElement
                 let layout = Layout()
                 layout.Xaxis <- LayoutXAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.XAxis))
                 layout.Yaxis <- LayoutYAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.YAxis))
+                match chart.DataSet with
+                | DataType.Live l ->
+                    l.Subscribe (fun (x, y) ->
+                        let data : ScatterOptions =
+                            (
+                                New [
+                                    "x", [|[|x|]|]
+                                    "y", [|[|y|]|]
+                                ]
+                            ) :> ScatterOptions
+                        Plotly.ExtendTraces(el, data, [|0|]) |> ignore
+                    ) |> ignore
+                | _ -> ()
                 Plotly.NewPlot(el, options, layout, defaultArg Config <| Plotly.Options()) |> ignore
 
 
         static member Render(chart : Charts.BarChart,
-                 ?Size : Size,
-                 ?Config : ChartJs.Options,
+                 ?Config : Plotly.Options,
                  ?Window : int) =
-            ChartJsInternal.RenderBarChart chart (defaultArg Size defaultSize) Config Window
+            let options =
+                let data =
+                    match chart.DataSet with
+                    | DataType.Live l -> [||]
+                    | DataType.Static s -> 
+                        Window
+                        |> Option.fold (fun s w ->
+                            let skp = s.Length - w
+                            if skp >= s.Length then [||]
+                            elif skp <= 0 then s
+                            else s.[skp..]
+                        ) (Seq.toArray s)
+                let options = BarOptions()
+                options.X <- data |> Array.map fst
+                options.Y <- data |> Array.map snd
+                options.Name <- chart.Config.Title
+                options.Marker <- BarMarker(Color = string chart.SeriesConfig.FillColor)
+
+                [| options |]
+            withNewDiv <| fun el ->
+                let el = el :?> HTMLElement
+                let layout = Layout()
+                layout.Xaxis <- LayoutXAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.XAxis))
+                layout.Yaxis <- LayoutYAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.YAxis))
+                match chart.DataSet with
+                | DataType.Live l ->
+                    l.Subscribe (fun (x, y) ->
+                        let data : BarOptions =
+                            (
+                                New [
+                                    "x", [|[|x|]|]
+                                    "y", [|[|y|]|]
+                                ]
+                            ) :> BarOptions
+                        Plotly.ExtendTraces(el, data, [|0|]) |> ignore
+                    ) |> ignore
+                | _ -> ()
+                Plotly.NewPlot(el, options, layout, defaultArg Config <| Plotly.Options()) |> ignore
 
         static member Render(chart : Charts.RadarChart,
-                 ?Size : Size,
-                 ?Config : ChartJs.RadarChartOptions,
+                 ?Config : Plotly.Options,
                  ?Window : int) =
-            ChartJsInternal.RenderRadarChart chart (defaultArg Size defaultSize) Config Window
+            let options =
+                let data =
+                    match chart.DataSet with
+                    | DataType.Live l -> [||]
+                    | DataType.Static s -> 
+                        Window
+                        |> Option.fold (fun s w ->
+                            let skp = s.Length - w
+                            if skp >= s.Length then [||]
+                            elif skp <= 0 then s
+                            else s.[skp..]
+                        ) (Seq.toArray s)
+                let options = ScatterPolarOptions()
+                options.Theta <- data |> Array.map fst
+                options.R <- data |> Array.map snd
+                options.Name <- chart.Config.Title
+                options.Fill <- Fill.Toself
+                options.Fillcolor <- string chart.SeriesConfig.FillColor
+                options.Line <-
+                    ScatterPolarLine(Color = string chart.SeriesConfig.StrokeColor)
+
+                options.Marker <-
+                    ScatterPolarMarker(
+                        Color = string chart.ColorConfig.PointColor,
+                        Line = ScatterPolarMarkerLine(Color = string chart.ColorConfig.PointStrokeColor)
+                    )
+
+                [| options |]
+            withNewDiv <| fun el ->
+                let el = el :?> HTMLElement
+                let layout = Layout()
+                layout.Xaxis <- LayoutXAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.XAxis))
+                layout.Yaxis <- LayoutYAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.YAxis))
+                match chart.DataSet with
+                | DataType.Live l ->
+                    l.Subscribe (fun (x, y) ->
+                        let data : ScatterPolarOptions =
+                            (
+                                New [
+                                    "theta", [|[|x|]|]
+                                    "r", [|[|y|]|]
+                                ]
+                            ) :> ScatterPolarOptions
+                        Plotly.ExtendTraces(el, data, [|0|]) |> ignore
+                    ) |> ignore
+                | _ -> ()
+                Plotly.NewPlot(el, options, layout, defaultArg Config <| Plotly.Options()) |> ignore
 
         static member Render(chart : Charts.PieChart,
-                 ?Size : Size,
-                 ?Config : ChartJs.PieDoughnutChartOptions,
+                 ?Config : Plotly.Options,
                  ?Window : int) =
-            let typ = PolarChartType.Pie <| defaultArg Config (ChartJs.PieDoughnutChartOptions())
-            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
+            let options =
+                let data =
+                    match chart.DataSet with
+                    | DataType.Live l -> [||]
+                    | DataType.Static s -> 
+                        Window
+                        |> Option.fold (fun s w ->
+                            let skp = s.Length - w
+                            if skp >= s.Length then [||]
+                            elif skp <= 0 then s
+                            else s.[skp..]
+                        ) (Seq.toArray s)
+                let options = PieOptions()
+                options.Labels <- data |> Array.map (fun d -> d.Label)
+                options.Values <- data |> Array.map (fun d -> d.Value)
+                options.Name <- chart.Config.Title
+                let pm = PieMarker()
+                pm.PieColors <- data |> Array.map (fun d -> string d.Color)
+                options.Marker <- pm
+
+                [| options |]
+            withNewDiv <| fun el ->
+                let el = el :?> HTMLElement
+                let layout = Layout()
+                match chart.DataSet with
+                | DataType.Live l ->
+                    l.Subscribe (fun pd ->
+                        let pm = PieMarker()
+                        pm.PieColors <- [| string pd.Color |]
+                        let data : PieOptions =
+                            New [
+                                "labels", [|[|pd.Label|]|]
+                                "values", [|[|pd.Value|]|]
+                                "marker", pm
+                            ]
+                        Plotly.ExtendTraces(el, data, [|0|]) |> ignore
+                    ) |> ignore
+                | _ -> ()
+                Plotly.NewPlot(el, options, layout, defaultArg Config <| Plotly.Options()) |> ignore
 
         static member Render(chart : Charts.DoughnutChart,
-                 ?Size : Size,
-                 ?Config : ChartJs.PieDoughnutChartOptions,
+                 ?Config : Plotly.Options,
                  ?Window : int) =
-            let typ = PolarChartType.Doughnut <| defaultArg Config (ChartJs.PieDoughnutChartOptions())
-            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
+            let options =
+                let data =
+                    match chart.DataSet with
+                    | DataType.Live l -> [||]
+                    | DataType.Static s -> 
+                        Window
+                        |> Option.fold (fun s w ->
+                            let skp = s.Length - w
+                            if skp >= s.Length then [||]
+                            elif skp <= 0 then s
+                            else s.[skp..]
+                        ) (Seq.toArray s)
+                let options = PieOptions()
+                options.Hole <- 0.4
+                options.Labels <- data |> Array.map (fun d -> d.Label)
+                options.Values <- data |> Array.map (fun d -> d.Value)
+                options.Name <- chart.Config.Title
+                let pm = PieMarker()
+                pm.PieColors <- data |> Array.map (fun d -> string d.Color)
+                options.Marker <- pm
+
+                [| options |]
+            withNewDiv <| fun el ->
+                let el = el :?> HTMLElement
+                let layout = Layout()
+                match chart.DataSet with
+                | DataType.Live l ->
+                    l.Subscribe (fun pd ->
+                        let pm = PieMarker()
+                        pm.PieColors <- [| string pd.Color |]
+                        let data : PieOptions =
+                            New [
+                                "labels", [|[|pd.Label|]|]
+                                "values", [|[|pd.Value|]|]
+                                "marker", pm
+                                "hole", 0.4
+                            ]
+                        Plotly.ExtendTraces(el, data, [|0|]) |> ignore
+                    ) |> ignore
+                | _ -> ()
+                Plotly.NewPlot(el, options, layout, defaultArg Config <| Plotly.Options()) |> ignore
 
         static member Render(chart : Charts.PolarAreaChart,
-                 ?Size : Size,
-                 ?Config : ChartJs.PolarAreaChartOptions,
+                 ?Config : Plotly.Options,
                  ?Window : int) =
-            let typ = PolarChartType.PolarArea <| defaultArg Config (ChartJs.PolarAreaChartOptions())
-            ChartJsInternal.RenderPolarAreaChart chart (defaultArg Size defaultSize) typ Window
+            let options =
+                let data =
+                    match chart.DataSet with
+                    | DataType.Live l -> [||]
+                    | DataType.Static s -> 
+                        Window
+                        |> Option.fold (fun s w ->
+                            let skp = s.Length - w
+                            if skp >= s.Length then [||]
+                            elif skp <= 0 then s
+                            else s.[skp..]
+                        ) (Seq.toArray s)
+                data 
+                |> Array.map (fun data ->
+                    let options = BarPolarOptions()
+                    options.Theta <- [|data.Label|]
+                    options.R <- [|data.Value|]
+                    options.Name <- chart.Config.Title
+                    options.Marker <- BarPolarMarker(Color = string data.Color)
+                    options
+                )
+            withNewDiv <| fun el ->
+                let el = el :?> HTMLElement
+                let layout = Layout()
+                match chart.DataSet with
+                | DataType.Live l ->
+                    l.Subscribe (fun d ->
+                        let data : BarPolarOptions =
+                            (
+                                New [
+                                    "r", [|[|d.Value|]|]
+                                    "theta", [|[|d.Label|]|]
+                                    "marker", BarPolarMarker(Color = string d.Color)
+                                ]
+                            ) :> BarPolarOptions
+                        Plotly.ExtendTraces(el, data, [|0|]) |> ignore
+                    ) |> ignore
+                | _ -> ()
+                Plotly.NewPlot(el, options, layout, defaultArg Config <| Plotly.Options()) |> ignore
 
         static member Render(chart : Charts.CompositeChart<LineChart>,
-                 ?Size : Size,
-                 ?Config : ChartJs.Options,
+                 ?Config : Plotly.Options,
                  ?Window : int) =
-            ChartJsInternal.RenderCombinedLineChart chart (defaultArg Size defaultSize) Config Window
+            let options =
+                chart.Charts
+                |> Seq.map (fun chart ->
+                    let data =
+                        match chart.DataSet with
+                        | DataType.Live l -> [||]
+                        | DataType.Static s -> 
+                            Window
+                            |> Option.fold (fun s w ->
+                                let skp = s.Length - w
+                                if skp >= s.Length then [||]
+                                elif skp <= 0 then s
+                                else s.[skp..]
+                            ) (Seq.toArray s)
+                    let options = ScatterOptions()
+                    options.X <- data |> Array.map fst
+                    options.Y <- data |> Array.map snd
+                    options.Name <- chart.Config.Title
+                    options.Fill <- Fill.Tozeroy
+                    options.Fillcolor <- string chart.SeriesConfig.FillColor
+                    options.Line <-
+                        ScatterLine(Color = string chart.SeriesConfig.StrokeColor)
+
+                    options.Marker <-
+                        ScatterMarker(
+                            Color = string chart.ColorConfig.PointColor,
+                            Line = ScatterMarkerLine(Color = string chart.ColorConfig.PointStrokeColor)
+                        )
+
+                    options
+                )
+                |> Array.ofSeq
+            
+            withNewDiv <| fun el ->
+                let el = el :?> HTMLElement
+                let layout = Layout()
+                //layout.Xaxis <- LayoutXAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.XAxis))
+                //layout.Yaxis <- LayoutYAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.YAxis))
+                chart.Charts
+                |> Seq.iteri (fun i chart ->
+                    match chart.DataSet with
+                    | DataType.Live l ->
+                        l.Subscribe (fun (x, y) ->
+                            let data : ScatterOptions =
+                                (
+                                    New [
+                                        "x", [|[|x|]|]
+                                        "y", [|[|y|]|]
+                                    ]
+                                ) :> ScatterOptions
+                            Plotly.ExtendTraces(el, data, [|i|]) |> ignore
+                        ) |> ignore
+                    | _ -> ()
+                )
+                Plotly.NewPlot(el, options, layout, defaultArg Config <| Plotly.Options()) |> ignore
 
         static member Render(chart : Charts.CompositeChart<BarChart>,
-                 ?Size : Size,
-                 ?Config : ChartJs.Options,
+                 ?Config : Plotly.Options,
                  ?Window : int) =
-            ChartJsInternal.RenderCombinedBarChart chart (defaultArg Size defaultSize) Config Window
+            let options =
+                chart.Charts
+                |> Seq.map (fun chart ->
+                    let data =
+                        match chart.DataSet with
+                        | DataType.Live l -> [||]
+                        | DataType.Static s -> 
+                            Window
+                            |> Option.fold (fun s w ->
+                                let skp = s.Length - w
+                                if skp >= s.Length then [||]
+                                elif skp <= 0 then s
+                                else s.[skp..]
+                            ) (Seq.toArray s)
+                    let options = BarOptions()
+                    options.X <- data |> Array.map fst
+                    options.Y <- data |> Array.map snd
+                    options.Name <- chart.Config.Title
+                    options.Marker <- BarMarker(Color = string chart.SeriesConfig.FillColor)
+
+
+                    options
+                )
+                |> Array.ofSeq
+
+            withNewDiv <| fun el ->
+                let el = el :?> HTMLElement
+                let layout = Layout()
+                //layout.Xaxis <- LayoutXAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.XAxis))
+                //layout.Yaxis <- LayoutYAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.YAxis))
+                chart.Charts
+                |> Seq.iteri (fun i chart ->
+                    match chart.DataSet with
+                    | DataType.Live l ->
+                        l.Subscribe (fun (x, y) ->
+                            let data : BarOptions =
+                                (
+                                    New [
+                                        "x", [|[|x|]|]
+                                        "y", [|[|y|]|]
+                                    ]
+                                ) :> BarOptions
+                            Plotly.ExtendTraces(el, data, [|i|]) |> ignore
+                        ) |> ignore
+                    | _ -> ()
+                )
+                Plotly.NewPlot(el, options, layout, defaultArg Config <| Plotly.Options()) |> ignore
 
         static member Render(chart : Charts.CompositeChart<RadarChart>,
-                 ?Size : Size,
-                 ?Config : ChartJs.RadarChartOptions,
+                 ?Config : Plotly.Options,
                  ?Window : int) =
-            ChartJsInternal.RenderCombinedRadarChart chart (defaultArg Size defaultSize) Config Window
-                
+            let options =
+                chart.Charts
+                |> Seq.map (fun chart ->
+                    let data =
+                        match chart.DataSet with
+                        | DataType.Live l -> [||]
+                        | DataType.Static s -> 
+                            Window
+                            |> Option.fold (fun s w ->
+                                let skp = s.Length - w
+                                if skp >= s.Length then [||]
+                                elif skp <= 0 then s
+                                else s.[skp..]
+                            ) (Seq.toArray s)
+                    let options = ScatterPolarOptions()
+                    options.Theta <- data |> Array.map fst
+                    options.R <- data |> Array.map snd
+                    options.Name <- chart.Config.Title
+                    options.Fill <- Fill.Toself
+                    options.Fillcolor <- string chart.SeriesConfig.FillColor
+                    options.Line <-
+                        ScatterPolarLine(Color = string chart.SeriesConfig.StrokeColor)
+
+                    options.Marker <-
+                        ScatterPolarMarker(
+                            Color = string chart.ColorConfig.PointColor,
+                            Line = ScatterPolarMarkerLine(Color = string chart.ColorConfig.PointStrokeColor)
+                        )
+
+                    options
+                )
+                |> Array.ofSeq
+
+            withNewDiv <| fun el ->
+                let el = el :?> HTMLElement
+                let layout = Layout()
+                //layout.Xaxis <- LayoutXAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.XAxis))
+                //layout.Yaxis <- LayoutYAxis(Title=LayoutAxisTitle(Text = chart.SeriesConfig.YAxis))
+                chart.Charts
+                |> Seq.iteri (fun i chart ->
+                    match chart.DataSet with
+                    | DataType.Live l ->
+                        l.Subscribe (fun (x, y) ->
+                            let data : ScatterPolarOptions =
+                                (
+                                    New [
+                                        "theta", [|[|x|]|]
+                                        "r", [|[|y|]|]
+                                    ]
+                                ) :> ScatterPolarOptions
+                            Plotly.ExtendTraces(el, data, [|i|]) |> ignore
+                        ) |> ignore
+                    | _ -> ()
+                )
+                Plotly.NewPlot(el, options, layout, defaultArg Config <| Plotly.Options()) |> ignore 

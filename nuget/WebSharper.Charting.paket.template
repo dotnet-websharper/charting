@@ -17,3 +17,5 @@ files
 dependencies
     framework: netstandard2.0
             WebSharper ~> LOCKEDVERSION:[3]
+            WebSharper.ChartJS ~> LOCKEDVERSION:[3]
+            WebSharper.Plotly ~> LOCKEDVERSION:[3]
