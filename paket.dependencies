@@ -12,7 +12,7 @@ nuget WebSharper.FSharp prerelease
 nuget WebSharper.ChartJs prerelease
 nuget WebSharper.UI prerelease
 nuget WebSharper.JQuery prerelease
-nuget WebSharper.ChartJS prerelease
+nuget WebSharper.Plotly prerelease
 
 group wsbuild
     git https://github.com/dotnet-websharper/build-script websharper50
