@@ -364,7 +364,7 @@ NUGET
     WebSharper (7.0.0.321-beta2)
       FSharp.Core (>= 6.0)
       System.Reflection.Emit.Lightweight (>= 4.7)
-    WebSharper.ChartJs (7.0.0.321-beta2)
+    WebSharper.ChartJs (7.0.1.323-beta2)
       WebSharper (>= 7.0 < 7.1)
     WebSharper.FSharp (7.0.0.321-beta2)
       WebSharper (7.0.0.321-beta2)
