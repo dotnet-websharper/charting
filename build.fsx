@@ -30,6 +30,16 @@ open WebSharper.Fake
 
 let targets =
     WSTargets.Default (fun () -> GetSemVerOf "WebSharper" |> ComputeVersion)
+    |> fun args ->
+        { args with
+            Attributes =
+                    [
+                        AssemblyInfo.Company "IntelliFactory"
+                        AssemblyInfo.Copyright "(c) IntelliFactory 2023"
+                        AssemblyInfo.Title "https://github.com/dotnet-websharper/charting"
+                        AssemblyInfo.Product "WebSharper Charting"
+                    ]
+        }
     |> MakeTargets
 
 Target.runOrDefault "Build"
