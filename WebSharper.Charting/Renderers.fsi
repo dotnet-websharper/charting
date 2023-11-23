@@ -89,4 +89,61 @@ module Renderers = begin
             /// <parameter name="Window">How many data points should be rendered max.</parameter>
             static member Render : chart:Charts.CompositeChart<Charts.RadarChart> * ?Size:Pervasives.Size * ?Config:ChartJs.RadarChartOptions * ?Window:int -> WebSharper.UI.Doc
         end
+
+    type Plotly =
+        class
+            /// <summary>Renders a LineChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Config">Plotly configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
+            static member Render : chart:Charts.LineChart * ?Config:Plotly.Options * ?Window:int -> WebSharper.UI.Doc
+
+//            /// <summary>Renders a BarChart instance.</summary>
+//            /// <parameter name="chart">The chart to be rendered.</parameter>
+//            /// <parameter name="Config">Plotly configuration for rendering the chart.</parameter>
+//            /// <parameter name="Window">How many data points should be rendered max.</parameter>
+            static member Render : chart:Charts.BarChart * ?Config:Plotly.Options * ?Window:int -> WebSharper.UI.Doc
+//            
+//            /// <summary>Renders a RadarChart instance.</summary>
+//            /// <parameter name="chart">The chart to be rendered.</parameter>
+//            /// <parameter name="Config">Plotly configuration for rendering the chart.</parameter>
+//            /// <parameter name="Window">How many data points should be rendered max.</parameter>
+            static member Render : chart:Charts.RadarChart * ?Config:Plotly.Options * ?Window:int -> WebSharper.UI.Doc
+           
+            /// <summary>Renders a PieChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Config">Plotly configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
+            static member Render : chart:Charts.PieChart * ?Config:Plotly.Options * ?Window:int -> WebSharper.UI.Doc
+            
+            /// <summary>Renders a DoughnutChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Config">Plotly configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
+            static member Render : chart:Charts.DoughnutChart * ?Config:Plotly.Options * ?Window:int -> WebSharper.UI.Doc
+            
+            /// <summary>Renders a PolarAreaChart instance.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Config">Plotly configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
+            static member Render : chart:Charts.PolarAreaChart * ?Config:Plotly.Options * ?Window:int -> WebSharper.UI.Doc
+//            
+            /// <summary>Renders a combined LineChart.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Config">Plotly configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
+            static member Render : chart:Charts.CompositeChart<Charts.LineChart> * ?Config:Plotly.Options * ?Window:int -> WebSharper.UI.Doc
+
+            /// <summary>Renders a combined BarChart.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Config">Plotly configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
+            static member Render : chart:Charts.CompositeChart<Charts.BarChart> * ?Config:Plotly.Options * ?Window:int -> WebSharper.UI.Doc
+
+            /// <summary>Renders a combined RadarChart.</summary>
+            /// <parameter name="chart">The chart to be rendered.</parameter>
+            /// <parameter name="Config">Plotly configuration for rendering the chart.</parameter>
+            /// <parameter name="Window">How many data points should be rendered max.</parameter>
+            static member Render : chart:Charts.CompositeChart<Charts.RadarChart> * ?Config:Plotly.Options * ?Window:int -> WebSharper.UI.Doc
+        end
 end

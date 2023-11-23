@@ -3,4 +3,5 @@ WebSharper.FSharp
 WebSharper.ChartJs
 WebSharper.UI
 WebSharper.JQuery
+WebSharper.Plotly
 FSharp.Core
