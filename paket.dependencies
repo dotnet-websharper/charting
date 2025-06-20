@@ -7,12 +7,12 @@ framework: netstandard2.0, netcoreapp2.1, netcoreapp3.1, net5.0
 storage: none
 strategy: min
 
-nuget WebSharper prerelease
-nuget WebSharper.FSharp prerelease
-nuget WebSharper.ChartJs prerelease
-nuget WebSharper.UI prerelease
-nuget WebSharper.JQuery prerelease
-nuget WebSharper.Plotly prerelease
+nuget WebSharper ~> 9.0
+nuget WebSharper.FSharp ~> 9.0
+nuget WebSharper.ChartJs ~> 9.0
+nuget WebSharper.UI ~> 9.0
+nuget WebSharper.JQuery ~> 9.0
+nuget WebSharper.Plotly ~> 9.0
 
 group wsbuild
     git https://github.com/dotnet-websharper/build-script websharper80
