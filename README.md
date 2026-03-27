@@ -12,7 +12,7 @@ show a non-changing set of data while live ones depend on streams and are thus v
 convenient to display live data with.
 
 There is currently one renderer implementation, which uses [Chart.js][1] with our
-`ChartJs` bindings. Because of that the current chart types are limited to
+`ChartJs` [bindings][3]. Because of that the current chart types are limited to
 those that can be rendered by [Chart.js][1] but the API is easily extensible
 with new ones.
 
@@ -33,6 +33,7 @@ rendering implementations can choose to subscribe to them and update the canvas.
 
 [1]: http://chartjs.org
 [2]: http://fslab.org/FSharp.Charting/
+[3]: https:/github.com/dotnet-websharper/chartjs
 
 ## Chart Types
 Currently there are two kinds of charts each with their own set of types differentiated
@@ -58,14 +59,12 @@ on charts which implement the interface, and thus know what the color properties
 mean for them.
 
 ## Usage
-All the snippets assume the `WebSharper`, `WebSharper.Charting` and `WebSharper.UI.Next.Client` namespaces are
+All the snippets assume the `WebSharper`, `WebSharper.Charting` and `WebSharper.UI.Client` namespaces are
 open.
 
 ### Static charts
 Defining a new chart:
 ```fsharp
-open WebSharper.Charting
-
 let data = [for x in 1.0 .. 9.0 -> (string x, x * x)]
 let chart = Chart.Line data
 ```
@@ -123,12 +122,7 @@ Chart.Combine [
         .WithFillColor(Color.Rgba(10, 10, 70, 0.5))
 ]
 |> fun ch ->
-    Renderers.ChartJs.Render(ch,
-        Config =
-            ChartJs.LineChartConfiguration(
-                DatasetFill = true,
-                BezierCurve = true)
-)
+    Renderers.ChartJs.Render(ch)
 |> Doc.RunById "entry"
 ```
 ![Updating chart](doc/combined_lines.png)
@@ -162,8 +156,6 @@ async {
 Combining live charts (there's a catch here: the chart will only update if there's new
 value on all streams):
 ```fsharp
-open IntelliFactory.Reactive
-
 let source = Event<float>()
 
 let averageByPoint =
@@ -196,6 +188,9 @@ async {
 
 We expect the `averageByPoint` stream to converge to 150 here since we are generating
 uniform random data.
+
+### IntelliFactory.Reactive
+Older snippets and sample projects can contain a reference to the [IntelliFactory.Reactive](https://www.nuget.org/packages/IntelliFactory.Reactive) package. As of WebSharper 5.x and above, the reactive functionality is moved inside `WebSharper.Charting` under the `WebSharper.Charting.Reactive` module.
 
 ## Rendering
 The default renderers can be accessed from the `WebSharper.Charting.Renderers.ChartJs`
