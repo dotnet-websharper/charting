@@ -71,6 +71,7 @@ module Charts = begin
 
     /// <summary>Base type of all charts.</summary>
     /// <typeparam name="Self">The own type of the implementing class.</typeparam>
+    [<Interface>]
     type IChart<'Self when 'Self :> IChart<'Self>> =
         interface
             abstract member WithTitle : string -> 'Self
@@ -78,6 +79,7 @@ module Charts = begin
         end
 
     /// <summary>Chart that can be colored with ColorConfig.</summary>
+    [<Interface>]
     type IColorChart<'Self when 'Self :> IColorChart<'Self>> =
         interface
             inherit IChart<'Self>
@@ -89,6 +91,7 @@ module Charts = begin
             abstract member ColorConfig : ColorConfig
         end
 
+    [<Interface>]
     type ISeriesChart<'Self when 'Self :> ISeriesChart<'Self>> =
         interface
             inherit IChart<'Self>
@@ -101,6 +104,7 @@ module Charts = begin
         end
 
     /// <summary>Chart containing mutable data.</summary>
+    [<Interface>]
     type IMutableChart<'T, 'U> =
         /// <summary>Updates chart data at the given position.</summary>
         /// <param name="props">Extra properties needed for updating (such as index).</param>
@@ -181,6 +185,7 @@ module Charts = begin
             member SeriesConfig : SeriesChartConfig
         end
 
+    [<Interface>]
     type IPolarAreaChart<'Self when 'Self :> IPolarAreaChart<'Self>> =
         interface
             inherit IChart<'Self>
